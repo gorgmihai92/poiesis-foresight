@@ -61,7 +61,16 @@ class Numbers(unittest.TestCase):
         self.assertFalse(ind["own_past"]["usable"])
         self.assertTrue(all(r["z"] is None and r["pace"] is None for r in ind["recent"].values()))
         self.assertEqual(ind["recent"][2023]["level"], "unchanged")
-        self.assertIn("too few earlier years", trends.reading(ind))
+        self.assertEqual(trends.reading(ind), "rose in 2022 and 2024; was unchanged in 2023; growth not compared with its own past: it has 1 earlier growth figure and 5 are asked.")
+
+    def test_a_year_with_no_works_gives_no_change_figure_and_no_z(self):
+        values = {2012 + i: v for i, v in enumerate([4.0, 5.0, 0.0, 6.0, 7.0, 8.0, 9.0, 0.0, 12.0])}
+        ind = trends.indicators(values, recent=2, baseline=5)
+        self.assertEqual([r["level"] for r in ind["recent"].values()], [None, None])
+        self.assertFalse(ind["own_past"]["usable"])
+        sentence = trends.reading(ind)
+        self.assertIn("no change figure for 2019 and 2020 (a count of zero)", sentence)
+        self.assertIn("a year in it has a count of zero", sentence)
 
     def test_a_gap_in_the_years_is_refused(self):
         with self.assertRaises(trends.Refused) as stop:
@@ -281,6 +290,20 @@ class OwnTable(unittest.TestCase):
         code, _, err = run(trends, ["--own", self.table("series,year,count\na,2024,many\n"), "--last-full-year", "2024"])
         self.assertEqual(code, 2)
         self.assertIn("line 2", err)
+
+    def test_a_year_given_twice_is_refused(self):
+        code, _, err = run(trends, ["--own", self.table("series,year,count\na,2023,5\na,2024,6\na,2024,7\n"), "--last-full-year", "2024"])
+        self.assertEqual(code, 2)
+        self.assertIn("line 4 of the table is a second row for a in 2024", err)
+
+    def test_a_series_that_cannot_be_read_does_not_hide_the_others(self):
+        good = "".join(f"good,{2014 + i},{c}\n" for i, c in enumerate([30, 33, 35, 40, 44, 47, 52, 60, 66, 70]))
+        gap = "gap,2019,30\ngap,2020,31\ngap,2022,35\ngap,2023,36\n"
+        code, text, err = run(trends, ["--own", self.table("series,year,count\n" + good + gap), "--last-full-year", "2023"])
+        self.assertEqual((code, err), (2, ""))
+        self.assertIn("good (good) · your own table mine.csv", text)
+        self.assertIn("Reading: rose in 2021, 2022 and 2023", text)
+        self.assertIn("gap (gap) · not read: the series has no value for 2021", text)
 
     def test_one_input_and_only_one(self):
         self.assertEqual(run(trends, [])[0], 2)

@@ -78,11 +78,14 @@ def yearly_rate(values: dict[int, float], start: int, end: int) -> float | None:
 def own_past(growth: dict[int, float | None], before: int, baseline: int) -> dict:
     """Mean and standard deviation of the growth figures of up to `baseline` years before `before`."""
     years = [y for y in sorted(growth) if y < before][-baseline:]
-    usable = len(years) >= MIN_BASELINE and all(growth[y] is not None for y in years)
-    figures = [growth[y] for y in years] if usable else []
-    sd = statistics.stdev(figures) if usable else None
-    return {"years": [years[0], years[-1]] if years else None, "n": len(years), "mean": statistics.mean(figures) if usable else None, "sd": sd,
-            "usable": bool(usable and sd)}
+    why = (f"it has {len(years)} earlier growth figure{'' if len(years) == 1 else 's'} and {MIN_BASELINE} are asked" if len(years) < MIN_BASELINE
+           else "a year in it has a count of zero, so its growth has no figure" if any(growth[y] is None for y in years) else None)
+    figures = [growth[y] for y in years] if why is None else []
+    sd = statistics.stdev(figures) if figures else None
+    if why is None and not sd:
+        why = "its growth was the same every year, so there is no spread to compare with"
+    return {"years": [years[0], years[-1]] if years else None, "n": len(years), "mean": statistics.mean(figures) if figures else None, "sd": sd,
+            "usable": why is None, "why_not": why}
 
 
 def indicators(values: dict[int, float], recent: int = 3, baseline: int = 10, span: int = 5, z_limit: float = 2.0) -> dict:
@@ -95,7 +98,7 @@ def indicators(values: dict[int, float], recent: int = 3, baseline: int = 10, sp
     growth = log_growth(values)
     window = [y for y in years[-recent:] if y in growth]
     if not window:
-        raise Refused("the series has fewer than two full years")
+        raise Refused("the series has fewer than two full years in a row")
     past = own_past(growth, window[0], baseline)
     rows = {}
     for y in window:
@@ -132,8 +135,11 @@ def reading(ind: dict) -> str:
         hit = [y for y, r in rows.items() if r["pace"] == word]
         if hit:
             parts.append(f"growth {word} in " + listed(hit))
+    blank = [y for y, r in rows.items() if r["level"] is None]
+    if blank:
+        parts.append("no change figure for " + listed(blank) + " (a count of zero)")
     if not ind["own_past"]["usable"]:
-        parts.append(f"too few earlier years to compare its growth with its own past ({ind['own_past']['n']}, and {MIN_BASELINE} are asked)")
+        parts.append("growth not compared with its own past: " + ind["own_past"]["why_not"])
     last, previous = ind["rate"]["last"], ind["rate"]["previous"]
     if last["per_year"] is not None and previous["per_year"] is not None:
         parts.append(f"{100 * previous['per_year']:.1f}% a year over {previous['from']}–{previous['to']}, {100 * last['per_year']:.1f}% over {last['from']}–{last['to']}")
@@ -155,15 +161,20 @@ def research_series(path: Path) -> tuple[dict, list[dict]]:
     _, rows = gate.read_rows(Path(facts["data"]))
     key, label = ("series", "label") if facts["kind"] == "series" else ("topic_id", "topic")
     out: dict[str, dict] = {}
-    for r in rows:
-        s = out.setdefault(r[key], {"id": r[key], "label": r[label], "left_out": [], "count": {}, "base": {}, "count_all": {}, "base_all": {}})
-        year = int(r["year"])
-        if r["partial"] == "true":
-            s["left_out"].append(year)
-            continue
-        s["count"][year], s["base"][year] = int(r["count"]), int(r["base"])
-        if facts["kind"] == "series":
-            s["count_all"][year], s["base_all"][year] = int(r["count_all_types"]), int(r["base_all_types"])
+    try:
+        for r in rows:
+            s = out.setdefault(r[key], {"id": r[key], "label": r[label], "left_out": [], "count": {}, "base": {}, "count_all": {}, "base_all": {}})
+            year = int(r["year"])
+            if r["partial"] == "true":
+                s["left_out"].append(year)
+                continue
+            if year in s["count"]:
+                raise Refused(f"the file has two rows for {r[key]} in {year}")
+            s["count"][year], s["base"][year] = int(r["count"]), int(r["base"])
+            if facts["kind"] == "series":
+                s["count_all"][year], s["base_all"][year] = int(r["count_all_types"]), int(r["base_all_types"])
+    except (KeyError, TypeError, ValueError) as e:
+        raise Refused(f"a row of {Path(facts['data']).name} cannot be read ({e})")
     return facts, list(out.values())
 
 
@@ -189,6 +200,8 @@ def own_series(path: Path, last_full_year: int | None) -> list[dict]:
         if (r.get("partial") or "").strip().lower() == "true" or (last_full_year is not None and year > last_full_year):
             s["left_out"].append(year)
             continue
+        if year in s["count"]:
+            raise Refused(f"line {n} of the table is a second row for {r['series']} in {year}")
         s["count"][year] = count
         if base is not None:
             s["base"][year] = base
@@ -290,11 +303,13 @@ def table(ind: dict, number: str) -> list[str]:
     if past["usable"]:
         head = f"own past {past['years'][0]}–{past['years'][1]}: {signed(100 * (math.exp(past['mean']) - 1))} a year on average"
     else:
-        head = f"own past: {past['n']} earlier growth figures, too few to compare with ({MIN_BASELINE} are asked)"
+        head = "own past: not used, " + past["why_not"]
     lines = [f"  ({head})"]
     for y, r in ind["recent"].items():
         z = "" if r["z"] is None else f"   z {r['z']:+.1f}, {r['pace']}"
         lines.append(f"  {y}   {format(r['value'], number)}   {signed(r['change_pct'])}{z}")
+    if not ind["recent"]:
+        lines.append("  (no recent year has a year before it)")
     return lines
 
 
@@ -383,7 +398,14 @@ def main(argv: list[str] | None = None) -> int:
         if a.base_rate:
             result = base_rate(wanted, above, below, a)
         else:
-            result = [analyse(s, above, below, a) for s in wanted]
+            result = []
+            for s in wanted:
+                try:
+                    result.append(analyse(s, above, below, a))
+                except Refused as e:
+                    if kinds(above) != kinds(below):
+                        raise  # the share itself is refused: nothing in this file is read
+                    result.append({"id": s["id"], "label": s["label"], "refused": str(e)})
     except Refused as e:
         print(f"Refused: {e}", file=sys.stderr)
         return 2
@@ -394,8 +416,11 @@ def main(argv: list[str] | None = None) -> int:
         show_base_rate(result, header)
     else:
         for out in result:
-            show(out, header)
-    return 0
+            if "refused" in out:
+                print(f"{out['label']} ({out['id']}) · not read: {out['refused']}\n")
+            else:
+                show(out, header)
+    return 2 if not a.base_rate and any("refused" in out for out in result) else 0
 
 
 if __name__ == "__main__":
