@@ -1,0 +1,71 @@
+{
+ "script": {
+  "name": "counts.py",
+  "plugin": "poiesis-research",
+  "version": "2.4.0",
+  "sha256": "b42b2dd93da1db95787ffcc69617ed0f8cbfe1d46547156ab7b1f171607b7eb7",
+  "command": [
+   "counts.py",
+   "\"solid-state battery\"",
+   "\"quantum computing\" OR \"quantum computer\"",
+   "--label",
+   "Solid-state batteries",
+   "--label",
+   "Quantum computing",
+   "--from",
+   "2015",
+   "--to",
+   "2026"
+  ]
+ },
+ "database": "OpenAlex",
+ "years": [
+  2015,
+  2026
+ ],
+ "share": {
+  "per": 100000,
+  "numerator_types": [
+   "article",
+   "preprint",
+   "review"
+  ],
+  "denominator_types": [
+   "article",
+   "preprint",
+   "review"
+  ]
+ },
+ "corpus": "core (OpenAlex's default; the expansion corpus is not counted)",
+ "key": false,
+ "base": {
+  "what": "all works of those types",
+  "filter": "publication_year:2015-2026"
+ },
+ "search_field": "title and abstract (title_and_abstract.search); words are stemmed, inside double quotes too (seen on 2026-11-21: a quoted singular and its plural gave the same counts); quotes keep the words together",
+ "fetched": "2026-11-21",
+ "partial_years": [
+  2026
+ ],
+ "series": [
+  {
+   "id": "solid-state-batteries",
+   "label": "Solid-state batteries",
+   "search": "\"solid-state battery\"",
+   "filter": "title_and_abstract.search:\"solid-state battery\""
+  },
+  {
+   "id": "quantum-computing",
+   "label": "Quantum computing",
+   "search": "\"quantum computing\" OR \"quantum computer\"",
+   "filter": "title_and_abstract.search:\"quantum computing\" OR \"quantum computer\""
+  }
+ ],
+ "files": [
+  "solid-state-batteries-2026-11-21.csv",
+  "solid-state-batteries-2026-11-21.types.csv"
+ ],
+ "complete": true,
+ "rows": 24,
+ "coverage": "Coverage (2026-11-21): OpenAlex answered (3 requests, of which 3 from a recording)."
+}
