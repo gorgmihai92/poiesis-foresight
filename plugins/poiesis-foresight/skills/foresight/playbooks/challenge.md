@@ -50,6 +50,10 @@ A verdict is written once. It is copied wherever it is shown and never retyped, 
 conclusion again gives a new, dated verdict beside the old one. Report the kept and the weakened, and list the
 dropped briefly: what was dropped teaches as much.
 
+Where it is written: for a scenario, as one line under its heading, the verdict word first:
+`- **Challenge:** weakened · <the reason>`. For every other conclusion, as a row of the note's challenge table,
+with the conclusion as one sentence as it stands after the challenge.
+
 ## With poiesis-insight
 This playbook is short on purpose: it holds the questions that are about the future. poiesis-insight holds the
 general challenge: rivals, diagnosticity, independence, chance, sensitivity, consistency, denominators,

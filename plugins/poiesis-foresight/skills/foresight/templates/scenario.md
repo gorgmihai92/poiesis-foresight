@@ -11,4 +11,4 @@
 - **Holds only if:** <the conditions it needs; each one more makes it less likely, not more>
 - **Would be wrong if:** <what would show this future is not arriving>
 - **Signposts:** <the ids that point to it: SP-001>
-- **Challenge:** <kept / weakened / dropped, with the reason in one line; written once>
+- **Challenge:** <kept, weakened or dropped> · <the reason in one line; the verdict word comes first and is written once>

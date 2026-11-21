@@ -118,7 +118,7 @@ means "unknown", said in the report, never an error.
   next check | last value | last checked`. Status is `watching`, `reached` or `retired`.
 - Writes `foresight/reviews/<date>.md`.
 - In a note, a scenario has **Id** (SC-001), **From**, **Answers**, **Year**, **Built on**, **Holds only if**,
-  **Would be wrong if**, **Signposts** and **Challenge** (`kept`, `weakened` or `dropped`). A signpost's id is
-  SP-001; a forecast's is F-001.
+  **Would be wrong if**, **Signposts** and **Challenge** (the line starts with `kept`, `weakened` or `dropped`).
+  A signpost's id is SP-001; a forecast's is F-001.
 - Reads `research/signals/`, `research/data/`, `research/notes/` and `research/README.md` (poiesis-research) and
   `insights/` (poiesis-insight).
