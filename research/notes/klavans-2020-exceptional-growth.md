@@ -46,9 +46,11 @@
 - The 1.5% is the one published base rate this plugin holds for "exceptional growth is rare". It belongs to
   Scopus clusters, a three-year window and an 8% threshold. It is quoted with those three conditions, as a
   point of comparison, and never as the base rate of a project's own series.
-- A reading of the next three years from publication counts is, by this paper's own test, right about a third of
-  the time at best when the small series are excluded. `playbooks/trends.md` says a trend in counts is a lead
-  for a forecast in the log, not a statement about the future.
+- The bar the paper sets itself is modest: a Critical Success Index of 25%, which it equates with a third of
+  the forecasts being right and half of the real cases being found (p. 3, 14). With every community included,
+  neither model reached it. How far above it the models were once small communities were left out is in a
+  figure that was not read. `playbooks/trends.md` says a movement in counts is a lead for a forecast in the log,
+  not a statement about the future.
 - The study predicts clusters built from citations in Scopus. The plugin counts searches and topics in OpenAlex.
   The indicators there (among them one built on the peak year) were not used here.
 

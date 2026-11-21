@@ -35,8 +35,8 @@
   one person plus a model does better than either alone is not shown here.
 - A model's forecasts are scored only on questions that resolve after they are made. Scoring a model on questions
   from before its training cut-off tests its memory.
-- Near-certain questions are where the system lost most. The challenge step asks whether a forecast near 0 or 1
-  was pulled toward the middle.
+- Where the crowd was highly certain, the system did worse than the crowd. The challenge step asks whether a
+  forecast near 0 or 1 was pulled toward the middle.
 
 ## Quotes
 - "our averaged Brier score is .179, while the crowd achieves .149" (p. 9)

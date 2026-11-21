@@ -1,0 +1,23 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "poiesis-foresight",
+  "description": "Foresight for any project: what is changing, what it could mean and what to watch, with numbers from scripts, contrasting scenarios and forecasts that are scored later.",
+  "owner": {
+    "name": "George Mihai",
+    "email": "hi@georgemihai.com"
+  },
+  "plugins": [
+    {
+      "name": "poiesis-foresight",
+      "description": "Foresight from the signals, yearly counts and research a project already has: which signals to keep, whether a series moved against its own past, base rates, drivers, contrasting scenarios, forecasts with a date that are scored later, stress tests, signposts and reviews. One skill with thirteen playbooks and five scripts, and the foresight-analyst and forecaster agents.",
+      "version": "0.1.0",
+      "author": {
+        "name": "George Mihai",
+        "email": "hi@georgemihai.com"
+      },
+      "source": "./plugins/poiesis-foresight",
+      "category": "productivity",
+      "homepage": "https://github.com/gorgmihai92/poiesis-foresight"
+    }
+  ]
+}
