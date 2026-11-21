@@ -91,7 +91,8 @@ Every reading goes through `playbooks/challenge.md` before it is reported.
 
 ## Report
 - **For each series:** the gate's line, the script's output as printed, and the shape in one sentence.
-- **How it was counted:** the database, the date fetched and the document types, from the metadata.
+- **How it was counted:** the database, the date fetched, the document types and what the search matched (the
+  `search_field` line), as the series' metadata has them. Copy them; do not describe the search in other words.
 - **Not checked:** for example a second database, a second choice of windows, the base rate.
 
 ## Save (see SKILL.md, "Saving")

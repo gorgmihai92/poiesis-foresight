@@ -3,7 +3,7 @@
   "name": "counts.py",
   "plugin": "poiesis-research",
   "version": "2.4.0",
-  "sha256": "b42b2dd93da1db95787ffcc69617ed0f8cbfe1d46547156ab7b1f171607b7eb7",
+  "sha256": "1ede2f8e4ecb2cbf4971f480a5914fda3dc2e30d8ecad17c4eeda3ff9f6ddb54",
   "command": [
    "counts.py",
    "\"solid-state battery\"",
@@ -42,7 +42,7 @@
   "what": "all works of those types",
   "filter": "publication_year:2015-2026"
  },
- "search_field": "title and abstract (title_and_abstract.search); words are stemmed, inside double quotes too (seen on 2026-11-21: a quoted singular and its plural gave the same counts); quotes keep the words together",
+ "search_field": "title and abstract (title_and_abstract.search). OpenAlex stems words, inside double quotes too: on 2026-11-21 \"heat pump\" and \"heat pumps\" gave the same counts. Its documentation names one exception, seen the same day: a short quoted phrase that holds a stop word (\"theory of mind\") is matched as typed.",
  "fetched": "2026-11-21",
  "partial_years": [
   2026
