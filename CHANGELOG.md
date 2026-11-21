@@ -6,7 +6,9 @@ Nothing was removed from poiesis-insight, and the files both plugins write are t
 
 - **Moved from poiesis-insight 1.4.3,** first copied as they were: the foresight playbook, `forecasts.py`, the
   `foresight-analyst` agent, and the forecast and signal templates. The playbook is now four: `horizons`,
-  `layers`, `forecasts` and `trends`. `forecasts.py` prints what it printed before.
+  `layers`, `forecasts` and `trends`. `forecasts.py` prints what it printed before, with one difference: the
+  line under a table's header is skipped when it carries alignment colons (`|:---|`), where it used to be listed
+  under "Rows not understood".
 - **Thirteen playbooks,** grouped by the three questions of the UK Government Office for Science's Futures
   Toolkit. What is changing: `scan`, `trends`, `base-rates`, `horizons`, `drivers`. What it could mean: `layers`,
   `scenarios`, `wheels`, `forecasts`. What to do: `stress-test`, `signposts`, `review`. And `challenge`. Each

@@ -28,7 +28,7 @@ def cells_of(line: str) -> list[str]:
 def rows(path: Path) -> list[list[str]]:
     out = []
     for line in path.read_text(encoding="utf-8").splitlines():
-        if not line.startswith("|") or set(line) <= {"|", "-", " "}:
+        if not line.startswith("|") or set(line) <= {"|", "-", ":", " "}:  # the line under the header, aligned or not
             continue
         cells = cells_of(line)
         if cells and cells[0].lower() != "id" and not cells[0].startswith("<"):

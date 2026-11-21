@@ -30,7 +30,7 @@ COMPARE = {">=": lambda v, t: v >= t, "<=": lambda v, t: v <= t, ">": lambda v, 
 def rows(path: Path) -> list[list[str]]:
     out = []
     for line in path.read_text(encoding="utf-8").splitlines():
-        if not line.startswith("|") or set(line) <= {"|", "-", " "}:
+        if not line.startswith("|") or set(line) <= {"|", "-", ":", " "}:  # the line under the header, aligned or not
             continue
         cells = [c.strip() for c in line.strip("|").split("|")]
         if cells and cells[0].lower() != "id" and not cells[0].startswith("<"):

@@ -72,6 +72,16 @@ class Forecasts(unittest.TestCase):
         self.assertIn("Brier score: 0.040 over 1 resolved forecasts", text)
         self.assertIn("The log has no `model` and `owner` columns after `reasoning`: nothing to compare.", text)
 
+    def test_a_table_aligned_or_padded_by_an_editor_reads_the_same(self):
+        """Obsidian pads cells and can put colons in the line under the header."""
+        with tempfile.TemporaryDirectory() as tmp:
+            log = Path(tmp) / "forecasts.md"
+            log.write_text("| id    | question            | probability | made       | resolve by | outcome | reasoning |\n"
+                           "| :---- | :------------------ | ----------: | :--------: | ---------- | ------- | --------- |\n"
+                           "| F-001 | Padded and aligned  | 0.80        | 2019-01-01 | 2019-06-30 | 1       | note      |\n", encoding="utf-8")
+            text = scored(str(log))
+        self.assertEqual(text, "Brier score: 0.040 over 1 resolved forecasts (0 = perfect, 0.25 = always 50%)\n  F-001: said 80%, outcome 1 → 0.040\n")
+
     def test_the_template_is_a_log_the_script_reads(self):
         text = scored(str(SKILL / "templates" / "forecasts.md"), "--sources")
         self.assertIn("No resolved forecasts yet.", text)
@@ -123,6 +133,14 @@ class Signposts(unittest.TestCase):
             log = Path(tmp) / "signposts.md"
             log.write_text("| id | watch | trigger | points to | response | lead time | status | next check | last value | last checked | note |\n|---|---|---|---|---|---|---|---|---|---|---|\n"
                            "| SP-001 | Share of X | >= 25 | SC-001 | corrective: do Y | 6 months | watching | 2031-01-01 | 21.7 | 2030-05-01 | a column added later |\n", encoding="utf-8")
+            code, text, _ = run(signposts, [str(log), "--today", "2030-06-01"])
+        self.assertEqual((code, text), (0, "Signposts watched: 1. Reached: 0.\n"))
+
+    def test_an_aligned_table_reads_the_same(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            log = Path(tmp) / "signposts.md"
+            log.write_text("| id | watch | trigger | points to | response | lead time | status | next check | last value | last checked |\n|:---|:---|---:|:---:|---|---|---|---|---|---|\n"
+                           "| SP-001 | Share of X | >= 25 | SC-001 | corrective: do Y | 6 months | watching | 2031-01-01 | 21.7 | 2030-05-01 |\n", encoding="utf-8")
             code, text, _ = run(signposts, [str(log), "--today", "2030-06-01"])
         self.assertEqual((code, text), (0, "Signposts watched: 1. Reached: 0.\n"))
 

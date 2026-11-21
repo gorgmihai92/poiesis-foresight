@@ -176,6 +176,24 @@ class Manifest(unittest.TestCase):
         self.assertIn("description: ", front)
 
 
+class Readme(unittest.TestCase):
+    def test_the_file_tree_in_the_readme_names_every_file_of_the_plugin(self):
+        readme = (ROOT / "README.md").read_text(encoding="utf-8")
+        tree = readme.split("## What's in this repository", 1)[1].split("## ", 1)[0]
+        for folder in ("playbooks", "scripts", "templates"):
+            for path in sorted((SKILL / folder).glob("*.*")):
+                self.assertIn(path.name, tree, f"the README's tree does not list {folder}/{path.name}")
+        for path in sorted((PLUGIN / "agents").glob("*.md")):
+            self.assertIn(path.name, tree)
+
+    def test_the_readmes_say_five_products_and_give_the_install_lines(self):
+        for path in (ROOT / "README.md", PLUGIN / "README.md"):
+            text = path.read_text(encoding="utf-8")
+            self.assertIn("five products", text, path.name)
+            self.assertIn("/plugin marketplace add gorgmihai92/poiesis-foresight", text)
+            self.assertIn("/plugin install poiesis-foresight@poiesis-foresight", text)
+
+
 class Evals(unittest.TestCase):
     def test_each_case_has_a_prompt_and_graders_in_the_format_of_a_blank_case(self):
         cases = sorted(p for p in (PLUGIN / "evals").iterdir() if p.is_dir() and p.name != "results")
