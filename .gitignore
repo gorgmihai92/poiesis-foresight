@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+.DS_Store
+
+# Copies of the sources that were read stay on this computer. A text is listed below, one line each, only when
+# its licence allows sharing it.
+research/papers/*
+!research/papers/README.md
+
+# Results of claude plugin eval
+plugins/poiesis-foresight/evals/results/
