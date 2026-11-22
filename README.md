@@ -103,16 +103,17 @@ the request needs, and has every conclusion challenged before it is reported.
 
 - **A series passes a gate first.** `series_gate.py` accepts a yearly series only when it says which database it
   came from, that the run was complete, and that the same document types were counted above and below the line of
-  its share. It then adds the counts up again from the file that holds every type.
+  its share. It then adds the counts up again from the file that holds every type, and refuses a series whose
+  types file is missing.
 - **Growth is computed, not estimated.** `trends.py` gives each recent year's change, how far it is from the
   series' own earlier growth, the yearly rate over two spans, and the rate since the earlier peak. It prints the
   raw count and the share among all record types as checks, and does not read them.
-- **The words are fixed by rule.** The script says "rose" or "fell", and growth "above", "within" or "below its
-  own past". It never says "trend" or "emerging". Whether a subject is emerging takes more than growth, and the
+- **The words are fixed by rule.** The script says "rose" or "fell", and growth "faster than", "in line with"
+  or "slower than its own past". It never says "trend" or "emerging". Whether a subject is emerging takes more than growth, and the
   playbook asks for each part.
 - **A forecast is three probabilities.** The model answers several times, independently; you give your own number
-  before seeing the model's; the forecast of record is their mean. `forecasts.py` scores all three when the date
-  passes.
+  before seeing the model's; the forecast of record is their mean. `forecasts.py --sources` scores each once outcomes are
+  filled in.
 - **Agents are model calls.** `foresight-analyst` takes one issue. `forecaster` gives one probability for one
   question and is run three times at standard depth. Claude says how many it will start.
 
@@ -123,7 +124,8 @@ The rules are in `skills/foresight/rules.md`:
 - **Every statement says where it comes from:** a source with how much of it was read, an observation, a number a
   script printed, documentation with its date, or a choice. Anything recalled and not checked is marked so.
 - **An observation is kept apart from its reading.**
-- **A share counts the same document types above and below the line,** or it is refused.
+- **A share counts the same document types above and below the line,** or it is refused. A share on every
+  record type is shown and not read.
 - **The unfinished year is left out.**
 - **One year is a lead,** not a trend.
 - **A scenario is not a forecast** and has no probability.
@@ -143,24 +145,32 @@ foresight/
   reviews/<date>.md     what a review found
 ```
 
-A scenario has an id (`SC-001`), a signpost (`SP-001`) and a forecast (`F-001`), and each says what it rests on in
-a **From** line, so that when something it rests on is dropped later, a review can say what became stale.
+A scenario has an id (`SC-001`), a signpost (`SP-001`) and a forecast (`F-001`). A scenario says what it rests on
+in a **From** line, so that when something it rests on is dropped later, a review can say what became stale.
 
 ## What it cannot do
 
 - **It cannot show that foresight works.** The toolkit its methods come from says that proving the effect of
-  futures work after the event "will be hard". None of the method sources read for this plugin reports a test of
-  whether its method leads to better decisions.
-- **Counts say little about the next years.** They describe a database on the day it was read. The latest years
-  are the least reliable.
+  futures work after the event "will be hard". In the parts read for this plugin, none of the method sources reports a test of whether its method leads to
+  better decisions.
+- **Counts say little about the next years.** They describe a database on the day it was read. The one method
+  read here is not meant for less than two years ahead or more than five, and in between it cleared a modest bar
+  only for clusters of 20 papers or more.
 - **A model's forecast is not an expert's.** In the one benchmark read here, the best model scored about as well as
-  the median member of the public and behind expert forecasters. That is why the model's probability is logged
+  the public's median forecast, with the crowd's forecast in hand for some questions, and behind the expert
+  forecasters' median forecast. That is why the model's probability is logged
   beside yours and both are scored.
 - **Its workshop methods were written for groups.** Scenarios, driver mapping, wheels and stress tests are
-  described for six to sixteen people in a room. Here one person works with a model. That swap is a choice and has
+  described for groups: at least 6 people for drivers and wheels, at least 8 to 12 for scenarios, up to 16 for
+  stress tests. Here one person works with a model. That swap is a choice and has
   not been tested.
-- **Some rules are waiting.** Thresholds for calling a topic emergent, and control-chart rules, come from sources
-  that could not be read in full. The plugin states none of them.
+- **Some rules are waiting.** Thresholds for calling a topic emergent were expected from a paper that could be
+  read as an abstract only; whether it holds them is not known. The control-chart rules and the four layers that
+  came from Poiesis Insight are kept, each marked where it stands as resting on a source not read here.
+- **It has not been run in a real session yet.** The playbooks, the two agents and the eval cases were written,
+  and tests check their files. What Claude does with them is not shown.
+- **Signals and counts need Poiesis Research 2.4.0 or later,** which was an open pull request when this was
+  written. Until then, give it a table of your own.
 
 ## What's in this repository
 
@@ -215,8 +225,10 @@ LICENSE                       MIT
 
 ## Where the rules come from
 
-Each rule names its source, and there is one note per source in `research/notes`. Every note has a **Read** line
-that says how much of the source was read and what was not. No rule rests on a source that was not read.
+Each playbook lists the notes its rules rest on, and there is one note per source in `research/notes`. Every note
+has a **Read** line that says how much of the source was read and what was not. A rule with no source is a
+choice and is said to be one. Two passages that came from Poiesis Insight rest on sources known here by title
+only, and each says so where it stands.
 
 - **The three questions, and the steps for scanning, drivers, scenarios, wheels and stress tests:** the UK
   Government Office for Science's Futures Toolkit (2024), read in part, with the pages in the note. Open
@@ -228,17 +240,20 @@ that says how much of the source was read and what was not. No rule rests on a s
   these plugins, an observation. `trends.py` reproduces that run's 280 numbers.
 - **Base rates in three steps:** Flyvbjerg 2006, read in part. Its subject is the cost of building projects; using
   it for research topics is an analogy.
-- **Comparison classes first, and looking back at misses:** Chang, Chen, Mellers & Tetlock 2016, read in part.
+- **Comparison classes first:** Chang, Chen, Mellers & Tetlock 2016, read in part. Looking back at misses was
+  trained there and is not shown to help; doing it is this plugin's choice.
 - **Several model runs, averaged with your own number, scored only forward:** Halawi et al. 2024, Schoenegger et
-  al. 2024, Karger et al. 2025 and Paleka et al. 2025, each read in part.
+  al. 2024, Karger et al. 2025 and Paleka et al. 2025, each read in part. Those studies combined different models,
+  or a model with a crowd; repeating one model and averaging it with one person are this plugin's choices.
 - **Three horizons:** Sharpe et al. 2016, read in part.
-- **What scenarios do to judgment:** Phadnis et al. 2015, read in part.
+- **What scenarios did to experts' judgment in three field studies:** Phadnis et al. 2015, read in part.
 - **Signposts, triggers and prepared responses:** two chapters of Marchau, Walker, Bloemen & Popper (eds.) 2019,
   read in part.
-- **Read as an abstract only,** and used only for what the abstract says: Kahneman & Lovallo 1993, Tversky &
+- **Read as an abstract only,** and said to be so where a rule leans on one: Kahneman & Lovallo 1993, Tversky &
   Kahneman 1983, Börjeson et al. 2006, Mancini et al. 2010, Spaniol & Rowland 2023, Cuhls 2020, Amanatidou et al.
   2012, Mellers et al. 2015, Benneyan et al. 2003, Haasnoot et al. 2013, Carley et al. 2018.
-- **Known by title only, with no rule resting on them:** Hiltunen 2008, Inayatullah 1998, Meissner & Wulf 2013.
+- **Known by title only:** Hiltunen 2008, Inayatullah 1998, Meissner & Wulf 2013. The three parts of a signal and
+  the four layers came from Poiesis Insight and rest on the first two; they are kept and marked.
 - **Choices of this plugin, not findings:** the scripts' limits and windows, the definitions of a jump and of what
   followed it, the plain mean of the model's runs, equal weight for you and the model, the statuses of a signpost.
 
@@ -280,5 +295,6 @@ much was read. Bump the version (major if a path or field under "Files shared" c
 
 ## License
 
-MIT. The steps adapted from the Futures Toolkit are © Crown copyright 2024, used under the Open Government Licence
-v3.0.
+MIT. The steps of the scan, drivers, scenarios, wheels, stress-test and horizons playbooks are adapted from The
+Futures Toolkit (Government Office for Science, 2024), © Crown copyright 2024, licensed under the
+[Open Government Licence v3.0](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/).

@@ -35,7 +35,8 @@ Ask first what the user needs to know (Börjeson et al. 2006, from the abstract)
    Use the signals and series the project holds. A detail with no source is marked as imagined.
 5. **Name each** so that the name says what it is and takes no side (p. 67).
 6. **Write each one twice:** to its advantage, by someone it suits, and to its cost, by someone it harms. Most
-   futures mix both (toolkit, p. 4, 8).
+   futures mix both (toolkit, p. 4, 8). Writing it twice is this plugin's extension of Mancini et al. 2010, read
+   as an abstract only: there, two versions of one future drew a wider range of reactions from people.
 7. **Check each for consistency:** nothing in it that could not happen within its own logic (toolkit, p. 114).
 8. **Read across them.** What holds in every scenario is robust. What holds in one is contingent. Report the two
    apart.
@@ -44,26 +45,29 @@ Ask first what the user needs to know (Börjeson et al. 2006, from the abstract)
 
 Other ways to build a set, when two axes do not fit: four standard archetypes (continued growth, decline and
 collapse, disciplined society, transformation), and combining the outcomes of several uncertainties while ruling
-out the pairs that could not occur together (toolkit, p. 109–110, which credits Dator 2009 and Ritchey 2009;
-neither was read).
+out the pairs that could not occur together (toolkit, p. 109–111, which credits Dator 2009 and Ritchey 2009;
+neither was read, and no steps for them are given here).
 
 ## Rules
 - **A scenario has no probability.** "Scenarios are not plans or predictions of the future" (toolkit, p. 62). A
   claim inside one that can be checked becomes a forecast in the log.
-- **Every option is read against every scenario.** In the one field study read here, experts' judgment of an
+- **Every option is read against every scenario.** In the field studies read here, experts' judgment of an
   investment moved with how it fared in the scenario they had used (Phadnis et al. 2015, p. 1).
-- **Prefer what holds across scenarios and what keeps choices open.** In the same study experts preferred more
+- **Prefer what holds across scenarios and what keeps choices open.** In the same studies experts preferred more
   flexible options after using several scenarios (p. 1). That is what they did, not proof that they decided better.
-- **A scenario a model wrote is a draft.** The owner chooses, edits and names. Each one says which drivers it is
+- **A scenario a model wrote is a draft** (a caution from Spaniol & Rowland 2023, read as an abstract only). The
+  owner chooses, edits and names. Each one says which drivers it is
   built on and where they came from.
-- **Not before five years out** unless the scoping question says so (toolkit, p. 63).
-- **Each condition added makes a scenario less likely, never more** (`playbooks/challenge.md`).
+- **At least five years out, and usually ten to twenty** (toolkit, p. 63). A nearer year is this plugin's
+  allowance, when the scoping question asks for one.
+- **A scenario with a condition added cannot be more likely than the same one without it**
+  (`playbooks/challenge.md`).
 
 ## What this cannot claim
-The toolkit writes these steps for a workshop of eight to twelve people over four to five hours (p. 62–63). Here
+The toolkit writes these steps for a workshop of at least eight to twelve people and at least four to five hours
+(p. 62–63). Here
 one person works with a model, and the comparison between groups is replaced by drafts made separately and then
-compared. That replacement is this plugin's choice and has not been tested. Before the field study above,
-evidence of what scenarios do to judgment was "almost nonexistent" by its authors' account (p. 2).
+compared. That replacement is this plugin's choice and has not been tested. Before the field studies above, evidence of what scenarios do to judgment was "almost nonexistent" by its authors' account (p. 2).
 
 ## Then
 Scenario logic goes through `playbooks/challenge.md`. Then `playbooks/stress-test.md` and `playbooks/signposts.md`.

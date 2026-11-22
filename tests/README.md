@@ -28,4 +28,5 @@ This folder is not part of the plugin, so it is not installed with it.
 
 Two tests read the recorded run kept in the Poiesis Lab notebook (`fixtures/trend-scan/`, `fixtures/logs/`), which
 is a private folder outside this repository. Set `POIESIS_LAB` to the notebook's folder, or keep it at
-`~/Poiesis Lab`. Without it those tests are skipped and say so: the other tests do not need it.
+`~/Poiesis Lab`. Without it those tests are skipped and say so: the other tests do not need it. A run that prints "skipped" has
+not compared the recorded run, so on a machine without the notebook the suite passing does not show that.

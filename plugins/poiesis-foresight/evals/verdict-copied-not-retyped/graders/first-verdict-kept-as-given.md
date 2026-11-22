@@ -1,4 +1,4 @@
 ---
 type: regex
-pattern: '(?is)raw counts.{0,200}weakened'
+pattern: '(?i)raw counts[^\n]{0,160}weakened'
 ---

@@ -7,8 +7,8 @@
 - **Evidence:** empirical · language models, 500 members of the public and 39 expert forecasters on a random
   200 of 1,000 questions about events that had not happened yet; group sizes as a fetch agent read them in
   sections 4.1 and 4.2 (p. 1, 8–9).
-- **Read:** part of the text, on 2026-11-22: the abstract (p. 1), the passage on leakage (p. 3), the results
-  paragraph and Table 2 (p. 8–9). A fetch agent read the HTML edition through section 8 on 2026-11-21. Not read
+- **Read:** part of the text, on 2026-11-22: the abstract (p. 1), the passage on leakage (p. 3), how the two human groups were scored (p. 7), the results paragraph and
+  Table 2 (p. 8–9). A fetch agent read the HTML edition through section 8 on 2026-11-21. Not read
   here: how questions are generated and resolved (p. 4–7), the discussion, the appendices (p. 14–37).
 
 ## What it says
@@ -17,12 +17,15 @@
 - On the 200 questions also given to people, the median forecast of the expert forecasters scored a Brier of
   0.096, the median of the general public 0.121, and the best language model 0.122; the experts were ahead of
   both with p < 0.001 (p. 8, Table 2 on p. 9).
-- The best models on that table had been given the crowd's forecast for the market questions (p. 8).
+- Each human group is scored by its median forecast, not by a typical member (p. 7).
+- The best models on that table had been given the crowd's forecast for the market questions; the best model
+  without it scored 0.136 (p. 8).
 - The abstract's own summary: "expert forecasters outperform the top-performing LLM (p-value < 0.001)" (p. 1).
 
 ## What it means for the plugin
 - A model's probability is not treated as an expert's. It is logged as the model's, beside the owner's, and both
-  are scored. In this study the best model matched the median member of the public and was behind the experts.
+  are scored. In this study the best model matched the public's median forecast, with the crowd's forecast in
+  hand for the market questions (0.136 without it), and was behind the experts' median forecast.
 - The scores are medians of groups against single models of 2024, on that benchmark's questions. They say
   nothing certain about a current model, and nothing about one person's accuracy.
 - Scoring happens only on questions asked before the outcome was known. A log of dated forecasts is that kind of

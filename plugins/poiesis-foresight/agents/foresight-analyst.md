@@ -28,13 +28,15 @@ Return, in this order, only the parts your task asked for:
    |---|---|---|---|---|---|---|
 3. **Series:** the gate's line and the output of `trends.py`, as printed, then the shape in one sentence.
 4. **Drivers:** one row each: driver, kind, importance, certainty, what to do with it, From.
-5. **Scenarios:** each in the fields of `$T/templates/scenario.md`, without an id (the main session gives ids),
+5. **Layered readings** of the main issue, when asked: the four readings of `$T/playbooks/layers.md`, each marked
+   as interpretation.
+6. **Scenarios:** each in the fields of `$T/templates/scenario.md`, without an id (the main session gives ids),
    then what holds in all of them and what depends on one.
-6. **Proposed forecasts:** question, the source that would settle it, resolve date, comparison class. No
+7. **Proposed forecasts:** question, the source that would settle it, resolve date, comparison class. No
    probability: that is the `forecaster`'s and the owner's.
-7. **Proposed signposts:** what to watch and where, trigger, scenarios it tells apart, response, lead time.
-8. **Interpretation,** marked as such, with the conclusions the challenge should test first.
-9. **Not checked:** what you skipped.
+8. **Proposed signposts:** what to watch and where, trigger, scenarios it tells apart, response, lead time.
+9. **Interpretation,** marked as such. Mark which conclusions are uncommon: the challenge must test those first.
+10. **Not checked:** what you skipped.
 
 Never invent a signal, a number, a date or a source. If the question needs another Poiesis plugin (signals,
 counts and sources: [poiesis-research](https://github.com/gorgmihai92/poiesis-research); what the evidence means

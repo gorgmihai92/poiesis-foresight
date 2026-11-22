@@ -70,16 +70,16 @@ It does not scan, search or count: that is poiesis-research's work, with its rec
 ## Your own data
 
 - **Signals:** a link, a note or a list. Each needs what, where and when.
-- **A table of yearly figures:** columns `series,year,count`, with `base` for a share and `partial` for unfinished
-  years. `python3 -I $S/trends.py --own table.csv --last-full-year <year>`; for a share add what is counted above
+- **A table of yearly figures:** columns `series,year,count`, with `base` for a share and `partial` (true or false) for unfinished years. The `year` column may hold any
+  whole-number period in a row (a wave, a week), though the script's words say "year". `python3 -I $S/trends.py --own table.csv --last-full-year <year>`; for a share add what is counted above
   and below the line (`--above`, `--below`), which must be the same.
 - **A forecast log from poiesis-insight:** it is the same file. Its seven columns are read as before; the two
   new ones go at the end.
 
 ## Saving
 Save the work when any of these holds: the depth is standard or thorough; the user asks; the project already has
-a `foresight/` folder; or something has a date to come back to. A forecast, a signpost and a review are always
-saved. Otherwise (quick depth, a one-off question) answer in the chat only, and end with one line offering to
+a `foresight/` folder; or something has a date to come back to. A forecast, a signpost and a review are always saved; if the user wants no file, give
+the forecast in the chat and say it will not be scored. Otherwise (quick depth, a one-off question) answer in the chat only, and end with one line offering to
 save it. Never create a folder the user did not want.
 
 ## Answers

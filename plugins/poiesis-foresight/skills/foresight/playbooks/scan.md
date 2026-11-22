@@ -13,6 +13,16 @@ Notes in `research/notes` of the plugin's repository. Each says how much of its 
 - `hiltunen-2008-future-sign`: title only. poiesis-insight credits it with the three fields of the signal
   template (signal, issue, interpretation). Here they are a format; no rule rests on the paper.
 
+## As it came from poiesis-insight
+Collect signals from the input (and, if the user asks, from new research via the research plugin). Log each one with
+`templates/signal.md`, keeping three things apart (Hiltunen 2008): the **signal** (what was observed, how visible),
+the **issue** (how widespread), the **interpretation** (what it might mean to us). A weak signal is low on
+visibility and spread; it is not yet a trend.
+
+This passage is kept word for word. Its source, Hiltunen 2008, is known here by title only, so the three parts
+are a format and "low on visibility and spread" is a working definition, marked unverified. Signals are now
+collected by poiesis-research; this playbook starts from what was collected.
+
 ## Input
 1. **Signals from poiesis-research,** when the project has them: `research/signals/<date>-<name>.md`, each with an
    **Id** (SG-001), **What**, **Where**, **When**, **How visible**, **How widespread**, **Kind of source** and
@@ -24,8 +34,9 @@ Notes in `research/notes` of the plugin's repository. Each says how much of its 
 
 ## Triage
 1. **Coverage first.** Count the signals by kind of source. If one kind holds most of them, say the scan is
-   narrow before reading anything into it, and name the kinds that are absent: patents, regulators, sources not
-   in English (toolkit, p. 38–39).
+   narrow before reading anything into it, and name the kinds that are absent, such as patents, regulators and sources not in English. The toolkit counts
+   scans by subject category (p. 39) and asks for sources not in English (p. 38); counting by kind of source is
+   this plugin's.
 2. **Keep the observation apart from the reading.** Copy the observation as it was recorded, numbers included.
    Write what it might mean on its own line, marked as interpretation.
 3. **Sort each signal** (toolkit, p. 39–40):

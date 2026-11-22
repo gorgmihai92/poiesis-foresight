@@ -7,8 +7,8 @@ Notes in `research/notes` of the plugin's repository. Each says how much of its 
 - `flyvbjerg-2006-reference-class-forecasting`: read in part (p. 2–14, 16–17). The three steps below are its
   method. It is about the cost and demand of building projects; using it for research topics is this plugin's
   analogy.
-- `kahneman-1993-outside-view`: abstract only. The inside view anchors on the case; the outside view looks at
-  the record of similar cases.
+- `kahneman-1993-outside-view`: abstract only. Forecasts built from the case alone, the inside view, run
+  optimistic, and the statistics of past cases are neglected.
 - `klavans-2020-exceptional-growth`: read in part. One published base rate for growth in research, with its
   conditions.
 - `rotolo-2015-emerging-technology`: read in part. Studies of emergence often lack the cases that could have
@@ -31,8 +31,8 @@ Notes in `research/notes` of the plugin's repository. Each says how much of its 
 
 ## When there is no class
 - **No precedent, or too few cases:** write "base rate: not available", with what was looked for. Do not put a
-  guess in its place. The outside view fails where nothing like the case has happened before (Flyvbjerg 2006,
-  p. 9–10). The forecast then says its probability rests on the case alone.
+  guess in its place. The outside view may fail for outcomes outside all precedent, and the class is harder to choose where
+  precedents are few (Flyvbjerg 2006, p. 9–10). The forecast then says its probability rests on the case alone.
 - **A class the gate refuses:** without a key, a taxonomy scan holds the first 200 topics by id and is marked
   incomplete. Offer the choices: the user gets the free key and the scan is run again (their step), a narrower
   class the gate accepts, or no base rate.

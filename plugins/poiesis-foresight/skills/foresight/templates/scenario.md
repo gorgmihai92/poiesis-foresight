@@ -2,7 +2,7 @@
 
 - **Id:** SC-<number from `ids.py SC foresight`>
 - **From:** <the ids and citation keys it rests on, separated by commas: SG-001, IN-003, F-002, @key>
-- **Answers:** <what will happen / what can happen / how a target can be reached>
+- **Answers:** <what can happen; and the user's own question, if it was another>
 - **Year:** <the year it describes>
 - **Built on:** <each critical uncertainty and the end of it this scenario takes>
 - **The world:** <a short account: who does what, what is ordinary, what has gone>

@@ -8,7 +8,7 @@ Notes in `research/notes` of the plugin's repository.
 - `go-science-2024-futures-toolkit`: its Policy Stress-testing section, read in full (p. 79–84). Practitioner
   guidance; no test of the method is reported. The steps below adapt its four steps (Open Government Licence
   v3.0). It calls a single session "a rough and ready process" (p. 84).
-- `phadnis-2015-scenario-planning`: read in part (p. 1–4). One scenario read alone pulls judgment toward itself.
+- `phadnis-2015-scenario-planning`: read in part (p. 1–4). In those studies, experts' judgment moved with the one scenario they had used.
 
 ## Needs
 - **Scenarios with ids** (`playbooks/scenarios.md`), or trends or events to test against. With none, say so and
@@ -20,8 +20,8 @@ Notes in `research/notes` of the plugin's repository.
 ## Steps (toolkit, p. 81–83)
 1. **Recall each scenario** in a few lines: its axes, what is ordinary there.
 2. **State the option and its goal.** More than one option can be tested; each gets a row.
-3. **For each scenario in turn, suppose the world is as described** and decide, with the reason in one line,
-   whether the option is:
+3. **For each scenario in turn, suppose the world is as described** and decide, with the reason in one line, whether the option is one of the toolkit's three words (p. 83; what each
+   means is worded here):
    - **robust:** it works there as it is;
    - **in need of modification:** it could work there if changed, and say how;
    - **redundant:** it has no purpose there, or cannot work.

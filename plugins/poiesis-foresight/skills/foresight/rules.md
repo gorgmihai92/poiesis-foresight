@@ -11,8 +11,8 @@ otherwise **standard**.
 - **Quick:** one pass, inline. The three questions of `playbooks/challenge.md`, inline. One model probability,
   logged as one run.
 - **Standard:** the playbook as written. The challenge inline. Three independent model runs for a forecast.
-- **Thorough:** also a base rate for every forecast and every jump, a second choice of windows for every series,
-  five model runs, and the challenge by poiesis-insight's independent `challenger` agent when that plugin is
+- **Thorough:** also a second database or wording for every series where poiesis-research can count one, five
+  model runs, and the challenge by poiesis-insight's independent `challenger` agent when that plugin is
   installed.
 
 A default may be skipped at any depth if the report says which one and why. Every report ends with **Not
@@ -38,7 +38,8 @@ the step and report it as done. The same holds when an input is missing: no sign
 ## Numbers
 - A series from poiesis-research is read only after `series_gate.py` accepts it: complete metadata, a database
   that answered, a complete run, and the same document types above and below the line of its share.
-- A share with different document types on its two sides is refused. It is not recomputed another way.
+- A share with different document types on its two sides is refused. It is not recomputed another way. A share
+  that counts every record type on both sides is shown and not read.
 - The unfinished year is left out and named.
 - Growth, distances from a series' own past, rates and base rates come from `trends.py`; scores from
   `forecasts.py`; what is due from `signposts.py`; ids from `ids.py`. Their output is pasted, not retyped.
@@ -77,21 +78,23 @@ the step and report it as done. The same holds when an input is missing: no sign
 Notes in `research/notes` of the plugin's repository. Each note's **Read** line says how much of the source was
 read, and what was not.
 
-Read in part, with the pages in the note: the UK Government Office for Science's Futures Toolkit 2024 (the frame
+Read in part, with the pages or sections in the note: the UK Government Office for Science's Futures Toolkit 2024 (the frame
 of three questions, scanning, drivers, scenarios, wheels, stress-testing, three horizons; practitioner guidance,
 and it says itself that the effect of futures work is hard to prove); Rotolo, Hicks & Martin 2015 (what
 "emerging" needs besides growth); Klavans, Boyack & Murdick 2020 (shares, the earlier peak, small series, one
 base rate); Flyvbjerg 2006 (the three steps of a base rate); Chang, Chen, Mellers & Tetlock 2016 (comparison
-classes, looking back at misses); Halawi et al. 2024, Schoenegger et al. 2024, Karger et al. 2025 and Paleka et
+classes; looking back at misses was trained there and is not shown to help); Halawi et al. 2024, Schoenegger et al. 2024, Karger et al. 2025 and Paleka et
 al. 2025 (what a model's forecast is worth, how to combine it, and why it is scored only forward); Sharpe et al.
 2016 (the three horizons); Phadnis et al. 2015 (what scenarios did to experts' judgment); Walker, Marchau &
 Kwakkel 2019 and Haasnoot, Warren & Kwakkel 2019 (signposts, triggers, responses, lead time).
 
-Read as an abstract only, and used only for what the abstract says: Kahneman & Lovallo 1993, Tversky & Kahneman
+Read as an abstract only, and said to be so where a rule leans on one: Kahneman & Lovallo 1993, Tversky & Kahneman
 1983, Börjeson et al. 2006, Mancini et al. 2010, Spaniol & Rowland 2023, Cuhls 2020, Amanatidou et al. 2012,
 Mellers et al. 2015, Benneyan et al. 2003, Haasnoot et al. 2013, Carley et al. 2018.
 
-Known by title only, with no rule resting on them: Hiltunen 2008, Inayatullah 1998, Meissner & Wulf 2013.
+Known by title only: Hiltunen 2008, Inayatullah 1998, Meissner & Wulf 2013. Two passages that came from
+poiesis-insight rest on the first two: the three parts of a signal, and the four layers. They are kept as they
+came, and each says where it stands that its source was not read. Nothing is taken from the third.
 
 An observation: one recorded run of the plugins on 2026-11-17 (the same document types on both sides; one year
 is a lead; a verdict is copied).
@@ -100,5 +103,6 @@ Choices of this plugin, not findings: the script's limits and windows; the defin
 followed it; the plain mean of the model's runs; equal weight for the owner and the model; the statuses of a
 signpost; the id prefixes; using workshop methods with one person and a model.
 
-Waiting for a source to be read: thresholds for emergence (Carley et al. 2018); control-chart rules (Benneyan et
-al. 2003); what makes a signal weak (Hiltunen 2008); the layers method itself (Inayatullah 1998).
+Waiting for a source to be read: thresholds for emergence, which the plan expected from Carley et al. 2018 (its
+abstract gives none; whether the paper does is not known). Kept from poiesis-insight and marked unverified until
+their sources are read: the control-chart rules, what makes a signal weak, the four layers.

@@ -11,8 +11,8 @@ Notes in `research/notes` of the plugin's repository. Each says how much of its 
   enough to act on, and reliably; by the authors' account the study of signals is at an early stage.
 - `haasnoot-2013-adaptive-policy-pathways`: abstract only. The origin the lab plan named; no rule rests on it.
 
-Both chapters describe a planning method for public works over decades. Neither reports a test of whether
-signposts and triggers lead to better decisions, and one names their cost.
+Both chapters describe a planning method for public works over decades. In the sections read, neither reports a test of
+whether signposts and triggers lead to better decisions, and one names their cost.
 
 ## Steps
 1. **Start from what the decision rests on.** List the assumptions whose failure would undo it: each scenario's
@@ -33,13 +33,14 @@ signposts and triggers lead to better decisions, and one names their cost.
    - **reassessment:** the assumptions no longer hold; decide again;
    - or **look closer:** more research, which the second chapter counts as a valid answer to a signal (4.2).
 6. **Give the lead time:** how long the response takes to prepare and to work. If the trigger would be reached
-   later than that, move it earlier, watch a driver upstream, or mark the signpost "too late to act on"
-   (Haasnoot et al. 2019, 4.2).
+   later than that, move it earlier, watch a driver upstream, or write "too late to act on" at the start of its `response`
+   cell (Haasnoot et al. 2019, 4.2).
 7. **Log it** in `foresight/signposts.md` (`templates/signposts.md`): the id (`python3 -I $S/ids.py SP
    foresight`), status `watching`, and the date of the next check.
 
 ## Rules
-- **A signpost without a response is a curiosity.** Drop it, or keep it marked "watch only" and say why.
+- **A signpost without a response is a curiosity.** Drop it, or keep it with "watch only" in its `response` cell
+  and say why.
 - **As few as the decision needs.** Watching costs time for as long as it lasts, and setting it up is work
   (Walker et al. 2019, 3.5). No source read here gives a number.
 - **The trigger is not moved to fit the value.** A changed trigger is a new row that names the old one.

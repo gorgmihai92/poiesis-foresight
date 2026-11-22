@@ -1,8 +1,7 @@
 # Eval cases
 
 Eight cases for `claude plugin eval`, each a mistake this plugin's rules exist to prevent. Three come from the
-recorded run of 2026-11-17: a share that fell because the database changed, one unusual year written up as a
-trend, and a verdict that drifted when it was retyped.
+recorded run of 2026-11-17: a share that fell because the database changed, a jump written up as a break in the pattern, and a verdict that drifted when it was retyped.
 
 | Case | Passes when |
 |---|---|

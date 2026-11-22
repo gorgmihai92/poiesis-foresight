@@ -1,6 +1,6 @@
 # Challenge
 
-Every reading of a series, placement on a horizon, scenario logic, forecast and signpost goes through this before
+Every reading of a series, placement on a horizon, scenario logic and forecast goes through this before
 it is reported. The goal is to find why it might be wrong, not to defend it.
 
 ## Read first
@@ -19,11 +19,12 @@ Notes in `research/notes` of the plugin's repository. Each says how much of its 
 1. **Base rate.** How often do things like this go on, come true or arrive on time? Name the class and its count
    (`playbooks/base-rates.md`), or write "not available". A conclusion that starts from the story of this one case
    and has no class behind it is at most weakened.
-2. **Futures in contrast.** Write the future that contradicts this one, as carefully. What would have to be true
+2. **Futures in contrast** (an extension of Mancini et al. 2010, abstract only). Write the future that contradicts
+   this one, as carefully. What would have to be true
    for it? Does the evidence tell the two apart, or would it look the same under both? For a scenario: write it to
    its advantage and to its cost, and see which reading the evidence supports.
-3. **Detail adds no probability.** Count the conditions the conclusion needs. Each one more makes it less likely,
-   never more: a scenario with five conditions cannot be more probable than the same scenario with three. If
+3. **Detail adds no probability** (the arithmetic is certain; that people judge otherwise is Tversky & Kahneman
+   1983, abstract only). Count the conditions the conclusion needs. One more cannot make it more likely: a scenario with five conditions cannot be more probable than the same scenario with three. If
    the detailed version feels more convincing, that is the feeling to distrust. Give the probability of the
    plainest version first.
 
@@ -43,8 +44,8 @@ Notes in `research/notes` of the plugin's repository. Each says how much of its 
 ## Verdict, with one line of reason
 - **Kept:** survives the questions that apply; say how sure.
 - **Weakened:** survives as a narrower claim or with less confidence; say what was narrowed.
-- **Dropped:** it has no base rate and rests on the story of one case, or its contrary fits the evidence as well, or
-  it needs more conditions than the evidence supports.
+- **Dropped:** its contrary fits the evidence as well, or it needs more conditions than the evidence supports. A
+  conclusion with no class behind it is weakened, not dropped, and says it rests on the case alone.
 
 A verdict is written once. It is copied wherever it is shown and never retyped, softened or upgraded. Testing a
 conclusion again gives a new, dated verdict beside the old one. Report the kept and the weakened, and list the

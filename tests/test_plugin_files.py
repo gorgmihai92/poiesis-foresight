@@ -81,6 +81,8 @@ class Playbooks(unittest.TestCase):
             "scenarios": "Two to four scenarios built on the most uncertain, most important drivers. Report what holds across all scenarios\n(robust) and what depends on one (contingent); scenarios guide flexible choices, they are not forecasts.",
             "forecasts": "Where a claim can be checked later, write it as a forecast: a precise question, a probability, a date to resolve\nit. Add it to `foresight/forecasts.md` (`templates/forecasts.md`). When dates pass, score them:\n`python3 -I $S/forecasts.py foresight/forecasts.md`. Scores show which reasoning to trust next time.",
         }
+        moved["scan"] = 'Collect signals from the input (and, if the user asks, from new research via the research plugin). Log each one with\n`templates/signal.md`, keeping three things apart (Hiltunen 2008): the **signal** (what was observed, how visible),\nthe **issue** (how widespread), the **interpretation** (what it might mean to us). A weak signal is low on\nvisibility and spread; it is not yet a trend.'
+        moved["trends"] = "When the data have a time order (survey waves, usage logs, metrics), a trend is reported only after three checks:\n- **Signal or noise:** is the change larger than the series' usual variation? Draw the series with its mean and\n  limits at about three standard deviations, and look for points outside them or a long run on one side\n  (control charts; Benneyan et al. 2003). Say how many points the series has; a few points give a lead, not a trend.\n- **Base rate:** how often do similar changes, in similar series or past periods, continue? Start the forecast from\n  that outside view and adjust it, not from the story of this case (Kahneman & Lovallo 1993).\n- **Shape:** steady, speeding up, slowing down or leveling off; seasonal; a sudden break. Extrapolate only as a\n  dated forecast in the log, never as a statement."
         for name, passage in moved.items():
             self.assertIn(passage, (SKILL / "playbooks" / f"{name}.md").read_text(encoding="utf-8"), name)
 
@@ -226,7 +228,7 @@ class Evals(unittest.TestCase):
         self.assertFalse(row.search("| F-003 | Will the standard be published? | 0.30 | 2026-05-02 | 2026-10-31 | 0 | note | 0.70 0.80 0.80 | 0.85 |"))
         verdict = pattern("verdict-copied-not-retyped", "first-verdict-kept-as-given")
         self.assertTrue(verdict.search("- Raw counts overstate 2025 growth in every area: **weakened**."))
-        self.assertTrue(pattern("base-composition-trap", "same-type-share").search("48.8 per 100,000 in 2024 and 52.0 in 2025"))
+        self.assertFalse(verdict.search("- Raw counts overstate 2025 growth in every area: kept.\n- Synthetic biology accelerated in 2025: weakened."))
         self.assertTrue(pattern("no-signals-no-invention", "says-not-checked").search("**Not checked:** a scan"))
         fired = (PLUGIN / "evals" / "one-year-is-a-lead" / "graders" / "skill-fired.md").read_text(encoding="utf-8")
         match = re.compile(re.search(r"^input_match: '(.+)'$", fired, re.M).group(1))

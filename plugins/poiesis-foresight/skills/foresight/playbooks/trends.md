@@ -13,8 +13,24 @@ Notes in `research/notes` of the plugin's repository. Each says how much of its 
   emergence among five, it is relative, and the choice of windows and thresholds can create the finding.
 - `benneyan-2003-control-charts`: abstract only. A series varies when nothing has changed. The control-chart
   rules poiesis-insight's playbook names (limits at about three standard deviations, runs on one side) are not in
-  the abstract: they wait.
+  the abstract. They are kept below as they came, marked unverified.
 - `carley-2018-indicator-technical-emergence`: abstract only. The thresholds the lab plan expected from it wait.
+
+## As it came from poiesis-insight
+When the data have a time order (survey waves, usage logs, metrics), a trend is reported only after three checks:
+- **Signal or noise:** is the change larger than the series' usual variation? Draw the series with its mean and
+  limits at about three standard deviations, and look for points outside them or a long run on one side
+  (control charts; Benneyan et al. 2003). Say how many points the series has; a few points give a lead, not a trend.
+- **Base rate:** how often do similar changes, in similar series or past periods, continue? Start the forecast from
+  that outside view and adjust it, not from the story of this case (Kahneman & Lovallo 1993).
+- **Shape:** steady, speeding up, slowing down or leveling off; seasonal; a sudden break. Extrapolate only as a
+  dated forecast in the log, never as a statement.
+
+This passage is kept word for word. The limits at about three standard deviations and the run on one side come
+from a source read here as an abstract only, which does not state them: they are marked "from general knowledge,
+unverified", as poiesis-insight's own note marks them. `trends.py` computes the distance in standard deviations
+(`--z 3` gives the passage's limit) and does not look for runs. For data that are not yearly, put the period's
+number in the `year` column.
 
 ## Before a series is read
 1. **The gate.** `python3 -I $S/series_gate.py research/data/<name>.csv`. A series is accepted only when its
@@ -34,12 +50,13 @@ Notes in `research/notes` of the plugin's repository. Each says how much of its 
 Paste what it prints. Do not round it again, reword it or work out a figure by hand.
 
 ## The three checks
-1. **Signal or noise.** Is the change larger than the series' usual variation? The script gives each recent year's
+1. **Signal or noise.** Is the change larger than the series' usual variation (Benneyan et al. 2003, abstract
+   only)? The script gives each recent year's
    growth as a distance from the series' own earlier growth, in standard deviations (z). With fewer than five
    earlier growth figures it gives none: the series is then a lead. Say how many years the series has.
 2. **Base rate.** How often did a change like this go on? `playbooks/base-rates.md`.
-3. **Shape.** Steady, speeding up, slowing or levelling off: read it from the two yearly rates and the recent
-   years, and say which. Extrapolate only as a dated forecast in the log (`playbooks/forecasts.md`), never as a
+3. **Shape.** Steady, speeding up, slowing or levelling off: compare the two yearly rates the script prints and
+   the recent years, and say which as interpretation, in those words or plainer ones. Extrapolate only as a dated forecast in the log (`playbooks/forecasts.md`), never as a
    statement.
 
 ## Rules
@@ -59,28 +76,31 @@ Paste what it prints. Do not round it again, reword it or work out a figure by h
 - **One year is a lead.** One year above a series' own past is written as that. It becomes a forecast or a
   signpost, not a claim about what comes next.
 - **Say what the own past is made of,** and try a second choice (`--baseline`, `--recent`). A past that contains
-  the series' own take-off makes every later year look ordinary, and the choice of window can create a finding
-  (Rotolo et al. 2015, p. 30–31).
-- **The script's words only:** "rose", "fell", and growth "above", "within" or "below its own past". The limit
-  between them is 2 standard deviations (`--z`), which is a choice: no source that was read gives one.
+  the series' own take-off can make later years look ordinary (`poiesis-lab-2026-recorded-runs`), and the choice
+  of window can create a finding (Rotolo et al. 2015, p. 30–31).
+- **The script's words only:** "rose", "fell", and growth "faster than", "in line with" or "slower than its own
+  past". A series can rise and still grow slower than before: that is not a fall. The limit between the three
+  is 2 standard deviations (`--z`), which is a choice: no source that was read gives one.
+- **A share on every record type is not read.** When both sides count "all", the script shows the numbers as a
+  check and gives no reading. It is the measure that produced a false decline in the recorded run.
 
 ## Is it emerging?
 Do not call a subject emerging because its count grew. In the definition read here (Rotolo et al. 2015, p. 13),
 fast growth is one of five attributes, and each is addressed or marked "not assessed":
 - **Radical novelty:** the nearest existing work, from poiesis-research's prior-art playbook. Not assessed here.
-- **Relatively fast growth:** this playbook, against the series' own past and against other series in the same
-  field. The paper gives no absolute level and calls one "rather meaningless" (p. 14).
+- **Relatively fast growth:** this playbook, against the series' own past. The paper asks for a comparison
+  with other subjects in the same field as well; no script here makes one, so say it was not made. The paper gives no absolute level and calls one "rather meaningless" (p. 14).
 - **Coherence:** whether the thing holds together and has its own identity. No script here measures it.
 - **Prominent impact:** it lies in the future. Write it as a forecast.
 - **Uncertainty and ambiguity:** say what could still go several ways.
 
 One published point of comparison: among clusters of at least 20 papers in Scopus, about 1.5% reached "exceptional
-growth", defined as more than 8% a year in share over three years, measured from their peak (Klavans et al. 2020,
-p. 7–8). It belongs to those clusters and that definition. Quote it with its conditions or not at all.
+growth", defined as more than 8% a year in share, measured from the cluster's peak year to three years after the forecast
+(Klavans et al. 2020, p. 7–8). It belongs to those clusters and that definition. Quote it with its conditions or not at all.
 
 ## What the numbers cannot show
-- The database of today, not that of each year. Records are added and retyped after the fact.
-- The latest years are the least reliable: indexing lags (Rotolo et al. 2015, p. 30).
+- The database of today, not that of each year. Counts for past years moved between two fetches four days apart (the lab's log of 2026-11-21, an observation).
+- The latest years are the least settled: lags in indexing may add to this (Rotolo et al. 2015, p. 30).
 - The next years. Publication counts are a weak guide under two years and beyond five. In the window between, the
   one published method read here stayed under its own accuracy bar in every year until communities of fewer than
   20 papers were left out (Klavans et al. 2020, p. 14, 21).

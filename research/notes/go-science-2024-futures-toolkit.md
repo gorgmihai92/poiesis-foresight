@@ -120,8 +120,8 @@
 - The plugin's playbooks follow the three questions: what is changing (`scan`, `trends`, `base-rates`,
   `horizons`, `drivers`), so what (`layers`, `scenarios`, `wheels`, `forecasts`), now what (`stress-test`,
   `signposts`, `review`). The grouping is the toolkit's; which playbook sits where is this plugin's choice.
-- `scan`, `drivers`, `wheels`, `scenarios` and `stress-test` adapt the toolkit's steps. The toolkit writes them
-  for a workshop of six to sixteen people. Here one person works with a model, so the steps that exist to
+- `scan`, `drivers`, `wheels`, `scenarios` and `stress-test` adapt the toolkit's steps. The toolkit writes them for groups: at least 6 people for drivers and wheels, at least 8 to 12 for
+  scenarios, up to 16 for stress tests. Here one person works with a model, so the steps that exist to
   compare groups are replaced by independent passes that are then compared. That replacement is this plugin's
   choice and is not tested.
 - The toolkit is guidance. It gives steps and warnings, and it says itself that the effect of futures work is

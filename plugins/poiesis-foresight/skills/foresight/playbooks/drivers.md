@@ -16,12 +16,11 @@ Notes in `research/notes` of the plugin's repository.
 2. **Cover the kinds.** Sort the drivers by kind so that none is missing: political, economic, social,
    technological, legal and regulatory, environmental (p. 51). Say which kinds are empty. An empty kind is a gap
    in the input, not a finding.
-3. **Word each one as a phrase that names the direction of change.** "Sustained economic growth in China" is
-   clearer than "The economy" (p. 52).
+3. **Word each one as a phrase that names the direction of change.** "Sustained economic growth in China" is clearer than "The Economy" (p. 52).
 4. **Rate each twice,** with one line of reason: how important it is to the scoping question, and how certain its
    outcome is. Both are judgments: label them as interpretation and give the source each rests on.
 5. **Sort by the two ratings** (p. 53):
-   - important and certain: act on it now; it holds in every scenario;
+   - important and certain: act on it now. Such a driver holds in every scenario, which is this plugin's addition;
    - important and uncertain: a **critical uncertainty**; look into it further, or build scenarios on it;
    - less important and uncertain: track it, since it may grow in importance: a candidate signpost;
    - less important and certain: park it.
