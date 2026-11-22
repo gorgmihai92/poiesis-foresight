@@ -53,6 +53,7 @@ them asks a database or changes a file.
 
 ## From poiesis-research
 
+
 What foresight reads from the research plugin, when the project has it. It works without it too.
 - `research/README.md`: the index; start here.
 - `research/signals/<date>-<name>.md`: one signal each, with **Id** (SG-001), **What**, **Where**, **When**,

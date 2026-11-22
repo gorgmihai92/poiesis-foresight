@@ -19,8 +19,7 @@ This folder is not part of the plugin, so it is not installed with it.
 ## Fixtures
 
 - `fixtures/research-series/` is a series made by poiesis-research 2.4.0's `counts.py --replay` from that
-  repository's own recording (`tests/recordings/counts-series`), at commit `3391d44` (pull request 1 of
-  `gorgmihai92/poiesis-research`, not merged when this was written). The counts are OpenAlex's, fetched on
+  repository's own recording (`tests/recordings/counts-series`), at commit `d767017` on its `main`. The counts are OpenAlex's, fetched on
   2026-11-21 with no key. Set `POIESIS_RESEARCH` to a checkout of
   poiesis-research and one test makes the series again and compares it byte for byte; without it that test is
   skipped and says so.

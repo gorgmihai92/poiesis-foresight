@@ -3,7 +3,7 @@
   "name": "counts.py",
   "plugin": "poiesis-research",
   "version": "2.4.0",
-  "sha256": "1ede2f8e4ecb2cbf4971f480a5914fda3dc2e30d8ecad17c4eeda3ff9f6ddb54",
+  "sha256": "6e1c7ffdeff9fbefc98d441ceff220e8cc2c5dc37d2aafad3e99fae2727bde62",
   "command": [
    "counts.py",
    "\"solid-state battery\"",

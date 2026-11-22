@@ -169,8 +169,8 @@ in a **From** line, so that when something it rests on is dropped later, a revie
   came from Poiesis Insight are kept, each marked where it stands as resting on a source not read here.
 - **It has not been run in a real session yet.** The playbooks, the two agents and the eval cases were written,
   and tests check their files. What Claude does with them is not shown.
-- **Signals and counts need Poiesis Research 2.4.0 or later,** which was an open pull request when this was
-  written. Until then, give it a table of your own.
+- **Signals and counts need Poiesis Research 2.4.0 or later.** With an older version, or none, give it a table of
+  your own.
 
 ## What's in this repository
 
