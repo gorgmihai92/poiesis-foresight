@@ -32,9 +32,8 @@ Research ──► Insight ──► Foresight ──► Frontier ──► Desi
 collects     connects    anticipates   explores     creates
 ```
 
-Foresight used to be a playbook inside Poiesis Insight. Poiesis Insight 1.4 still carries that earlier copy and a
-`foresight-analyst` agent of its own; both write the same files as this plugin, so nothing breaks when the two are
-installed together. Its next major version leaves foresight to this one.
+Foresight used to be a playbook inside Poiesis Insight. Until 1.4.3 Insight carried it, with a `foresight-analyst`
+agent of its own; since Insight 2.0.0 foresight is this plugin's alone, and both write the same files as before.
 
 - **One job each.** Research says what sources say and what the counts are. Foresight reads them forward. It does
   not scan, search or count.
