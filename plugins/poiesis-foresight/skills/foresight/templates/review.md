@@ -1,3 +1,13 @@
+---
+type: review
+plugin: poiesis-foresight
+date: <YYYY-MM-DD, the day of the review>
+topic: "<the project, in a few words>"
+id: "<the file name, YYYY-MM-DD>"
+from:
+  - "[[foresight/forecasts]]"
+  - "[[foresight/signposts]]"
+---
 # Review of <YYYY-MM-DD>
 
 - **Covers:** <the logs and notes read: foresight/forecasts.md, foresight/signposts.md, the notes since …>

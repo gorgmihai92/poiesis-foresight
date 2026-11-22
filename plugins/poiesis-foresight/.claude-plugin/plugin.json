@@ -1,6 +1,6 @@
 {
   "name": "poiesis-foresight",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Foresight from the signals, yearly counts and research a project already has: which signals to keep, whether a series moved against its own past, base rates, drivers, contrasting scenarios, forecasts with a date that are scored later, stress tests, signposts and reviews. One skill with thirteen playbooks and five scripts, and the foresight-analyst and forecaster agents.",
   "author": {
     "name": "George Mihai",

@@ -1,3 +1,9 @@
+---
+type: foresight-report
+plugin: poiesis-foresight
+date: <YYYY-MM-DD, the day in the title>
+topic: "<the topic, in a few words>"
+---
 # <Topic> · foresight of <YYYY-MM-DD>
 
 - **Scoping question:** <what is being asked, how far ahead, and what decision it informs>

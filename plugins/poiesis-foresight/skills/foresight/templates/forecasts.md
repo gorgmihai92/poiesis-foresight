@@ -1,3 +1,9 @@
+---
+type: forecast-log
+plugin: poiesis-foresight
+date: <YYYY-MM-DD, the day the log was started>
+topic: "<the project, in a few words>"
+---
 # Forecast log
 
 One line per forecast. `outcome` stays empty until the resolve date, then 1 (happened) or 0 (did not).

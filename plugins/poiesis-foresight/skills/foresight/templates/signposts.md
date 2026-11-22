@@ -1,3 +1,9 @@
+---
+type: signpost-log
+plugin: poiesis-foresight
+date: <YYYY-MM-DD, the day the log was started>
+topic: "<the project, in a few words>"
+---
 # Signpost log
 
 One line per signpost: what is watched, the level or event that calls for a response, the scenarios it points to,
