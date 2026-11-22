@@ -33,7 +33,7 @@ collects     connects    anticipates   explores     creates
 ```
 
 Foresight used to be a playbook inside Poiesis Insight. Until 1.4.3 Insight carried it, with a `foresight-analyst`
-agent of its own; since Insight 2.0.0 foresight is this plugin's alone, and both write the same files as before.
+agent of its own; since Insight 2.0.0 only this plugin writes `foresight/`, with the same paths and fields.
 
 - **One job each.** Research says what sources say and what the counts are. Foresight reads them forward. It does
   not scan, search or count.
