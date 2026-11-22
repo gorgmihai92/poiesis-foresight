@@ -8,6 +8,8 @@ before.
   object, adds `id` and `from` (the two logs it reads). A report holds several scenarios and a log several rows, so
   their properties carry no id or verdict: those stay on the Id and Challenge lines and in the rows, which remain
   the record. The scenario and signal templates go inside a report and get no block.
+- **Docs.** The README says Insight 2.0.0 has left foresight to this plugin. `SKILL.md` asks for the block to change
+  in the same edit as what it copies.
 - **Tests.** `test_templates.py`: the block in each template and its rules, and `forecasts.py`, `signposts.py` and
   `ids.py` giving the same results on logs with the block and without it.
 - **Not checked in this version:** how Obsidian shows the properties (no vault was opened), and any run on a topic.

@@ -130,3 +130,5 @@ Added in 0.2.0. Everything above is unchanged.
   block is a copy for Obsidian's views, and the Id and Challenge lines and the log rows stay the record. In the
   block no line starts with `#`, text values are quoted, and a link is one quoted list item. Never put a link in a
   heading or an **Id** line, or a link with an alias (`[[a|b]]`) in a log row or any table.
+- When a value the block copies changes in the file, change the block in the same edit. Inside a quoted value
+  write `\"` for a quotation mark and `\\` for a backslash.
