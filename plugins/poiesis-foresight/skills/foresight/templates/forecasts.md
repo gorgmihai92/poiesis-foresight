@@ -14,4 +14,4 @@ order; a new column goes at the end.
 
 | id | question (precise, checkable) | probability | made | resolve by | outcome | reasoning (note) | model (independent runs) | owner |
 |---|---|---|---|---|---|---|---|---|
-| F-001 | <Will … by …?> | 0.30 | 2026-10-16 | 2027-06-30 |  | <link to foresight note> | 0.25 0.30 0.35 | 0.30 |
+| <F-001> | <Will … by …?> | <0.30> | <YYYY-MM-DD> | <YYYY-MM-DD> |  | <link to foresight note> | <0.25 0.30 0.35> | <0.30> |

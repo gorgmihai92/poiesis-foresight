@@ -16,8 +16,8 @@ The measure that is read is the share: the count per 100,000 works of the base, 
 above and below the line. A share with different types on its two sides is refused. The raw count and the
 share among all record types are printed as checks and are not read.
 
-The words it prints are fixed by rule: "rose" or "fell" is the sign of the change; "above", "within" or "below
-its own past" is z against --z (2). That limit, the windows and --min-count (20) are choices, not findings.
+The words it prints are fixed by rule: "rose" or "fell" is the sign of the change; growth "faster than", "in
+line with" or "slower than its own past" is z against --z (2). A series can rise and still grow slower than before. That limit, the windows and --min-count (20) are choices, not findings.
 It does not say "trend" or "emerging": whether a series is one is decided in the playbook, after the challenge.
 
 Exit code 0, or 2 when a series is refused or cannot be read.
@@ -36,6 +36,10 @@ import series_gate as gate  # noqa: E402
 MIN_BASELINE = 5   # fewer earlier growth figures than this give no z: a choice
 MIN_CASES = 20     # fewer jumps than this are listed and not called a rate: a choice
 ALL = ("all",)
+EVERYTHING = {"all", "all types", "all record types", "all document types", "every type", "every record type", "every document type",
+              "all works", "all records", "everything"}
+NOT_READ = ("not read: this share counts every record type on both sides. The base can grow through kinds of record the search does "
+            "not find, so such a share can fall while the subject grows. Count the same named document types above and below the line.")
 
 
 class Refused(Exception):
@@ -51,12 +55,24 @@ def kinds(text) -> tuple[str, ...]:
     return tuple(sorted(str(i).strip().lower() for i in items if str(i).strip()))
 
 
+def every_type(what) -> bool:
+    """Whether a side is said to count every kind of record, and not a named set of document types."""
+    named = kinds(what)
+    return len(named) == 1 and named[0] in EVERYTHING
+
+
 def share(count: dict, base: dict, above, below) -> dict[int, float]:
     """The count per 100,000 of the base, year by year. Both sides must count the same kinds of record."""
     if kinds(above) != kinds(below) or not kinds(above):
         raise Refused(f"a share needs the same document types on both sides: {', '.join(kinds(above)) or 'not said'} above the line, "
                       f"{', '.join(kinds(below)) or 'not said'} below")
-    return {y: 1e5 * count.get(y, 0) / base[y] for y in sorted(base) if base[y]}
+    empty = [y for y in sorted(base) if not base[y] > 0]
+    if empty:
+        raise Refused("the base is zero or missing in " + ", ".join(map(str, empty[:5])) + ": a share cannot be computed for it")
+    lone = [y for y in sorted(count) if y not in base]
+    if lone:
+        raise Refused("there is a count and no base for " + ", ".join(map(str, lone[:5])))
+    return {y: 1e5 * count.get(y, 0) / base[y] for y in sorted(base)}
 
 
 def log_growth(values: dict[int, float]) -> dict[int, float | None]:
@@ -91,9 +107,12 @@ def own_past(growth: dict[int, float | None], before: int, baseline: int) -> dic
 def indicators(values: dict[int, float], recent: int = 3, baseline: int = 10, span: int = 5, z_limit: float = 2.0) -> dict:
     """The indicators of one measure. `values` holds full years only."""
     years = sorted(values)
+    if not years:
+        raise Refused("the series has no full year")
     gaps = [y for y in range(years[0], years[-1] + 1) if y not in values]
     if gaps:
-        raise Refused("the series has no value for " + ", ".join(map(str, gaps)) + ": growth from year to year cannot be computed across a gap")
+        raise Refused("the series has no value for " + ", ".join(map(str, gaps[:5])) + (f" and {len(gaps) - 5} more years" if len(gaps) > 5 else "")
+                      + ": growth from year to year cannot be computed across a gap")
     last = years[-1]
     growth = log_growth(values)
     window = [y for y in years[-recent:] if y in growth]
@@ -106,11 +125,11 @@ def indicators(values: dict[int, float], recent: int = 3, baseline: int = 10, sp
         z = (g - past["mean"]) / past["sd"] if past["usable"] and g is not None else None
         rows[y] = {"value": values[y], "growth": g, "change_pct": None if g is None else 100 * (math.exp(g) - 1), "z": z,
                    "level": None if g is None else "rose" if g > 0 else "fell" if g < 0 else "unchanged",
-                   "pace": None if z is None else "above its own past" if z >= z_limit else "below its own past" if z <= -z_limit else "within its own past"}
+                   "pace": None if z is None else "faster than its own past" if z >= z_limit else "slower than its own past" if z <= -z_limit else "in line with its own past"}
     earlier = {y: values[y] for y in years if y < window[0]}
     peak_year = max(earlier, key=lambda y: (earlier[y], y)) if earlier else None
     return {
-        "years": [years[0], last], "own_past": past, "recent": rows, "z_limit": z_limit,
+        "years": [years[0], last], "own_past": past, "recent": rows, "z_limit": z_limit, "span": span,
         "rate": {"previous": {"from": last - 2 * span, "to": last - span, "per_year": yearly_rate(values, last - 2 * span, last - span)},
                  "last": {"from": last - span, "to": last, "per_year": yearly_rate(values, last - span, last)}},
         "peak": None if peak_year is None else {"year": peak_year, "value": earlier[peak_year], "per_year_since": yearly_rate(values, peak_year, last),
@@ -131,7 +150,7 @@ def reading(ind: dict) -> str:
         hit = [y for y, r in rows.items() if r["level"] == word]
         if hit:
             parts.append(("was unchanged" if word == "unchanged" else word) + " in " + listed(hit))
-    for word in ("above its own past", "below its own past", "within its own past"):
+    for word in ("faster than its own past", "slower than its own past", "in line with its own past"):
         hit = [y for y, r in rows.items() if r["pace"] == word]
         if hit:
             parts.append(f"growth {word} in " + listed(hit))
@@ -143,6 +162,10 @@ def reading(ind: dict) -> str:
     last, previous = ind["rate"]["last"], ind["rate"]["previous"]
     if last["per_year"] is not None and previous["per_year"] is not None:
         parts.append(f"{100 * previous['per_year']:.1f}% a year over {previous['from']}–{previous['to']}, {100 * last['per_year']:.1f}% over {last['from']}–{last['to']}")
+    elif last["per_year"] is not None:
+        parts.append(f"{100 * last['per_year']:.1f}% a year over {last['from']}–{last['to']}; the series is too short for the {ind['span']} years before")
+    else:
+        parts.append(f"the series is too short for a yearly rate over {ind['span']} years")
     peak = ind["peak"]
     if peak and peak["now_below"]:
         parts.append(f"still below its earlier peak of {peak['year']}")
@@ -181,23 +204,32 @@ def research_series(path: Path) -> tuple[dict, list[dict]]:
 def own_series(path: Path, last_full_year: int | None) -> list[dict]:
     """The user's own table: series,year,count[,base][,partial]. It must say which years are full."""
     try:
-        header, rows = gate.read_rows(path)
+        with path.open(newline="", encoding="utf-8-sig") as f:
+            reader = csv.DictReader(f)
+            header, rows = list(reader.fieldnames or []), [(reader.line_num, r) for r in reader]
     except (OSError, csv.Error, UnicodeDecodeError) as e:
         raise Refused(f"the table cannot be read ({e})")
+    if tuple(header) in (gate.SERIES_COLUMNS, gate.TAXONOMY_COLUMNS) or gate.stem(path).with_name(gate.stem(path).name + ".meta.json").is_file():
+        raise Refused("this is a series saved by counts.py, not a table of your own: give it without --own, so that it passes series_gate.py")
     need = [c for c in ("series", "year", "count") if c not in header]
     if need:
         raise Refused("the table needs the columns series, year, count (and base for a share); it has no " + ", ".join(need))
     if "partial" not in header and last_full_year is None:
         raise Refused("the table does not say which years are full: give --last-full-year, or add a `partial` column with true or false")
     out: dict[str, dict] = {}
-    for n, r in enumerate(rows, start=2):
+    for n, r in rows:
         try:
             year, count = int(r["year"]), float(r["count"])
-            base = float(r["base"]) if "base" in header and str(r["base"]).strip() else None
+            base = float(r["base"]) if "base" in header and str(r["base"] or "").strip() else None
+            if not (1000 <= year <= 3000 and math.isfinite(count) and count >= 0 and (base is None or (math.isfinite(base) and base >= 0))):
+                raise ValueError
         except (TypeError, ValueError):
-            raise Refused(f"line {n} of the table has a year, a count or a base that is not a number")
+            raise Refused(f"line {n} of the table has a year, a count or a base that is not a number of zero or more")
+        flag = (r.get("partial") or "").strip().lower()
+        if flag not in ("", "true", "false"):
+            raise Refused(f"line {n} of the table has \"{r.get('partial')}\" in the `partial` column: write true or false")
         s = out.setdefault(r["series"], {"id": r["series"], "label": r.get("label") or r["series"], "left_out": [], "count": {}, "base": {}})
-        if (r.get("partial") or "").strip().lower() == "true" or (last_full_year is not None and year > last_full_year):
+        if flag == "true" or (last_full_year is not None and year > last_full_year):
             s["left_out"].append(year)
             continue
         if year in s["count"]:
@@ -218,6 +250,14 @@ def analyse(s: dict, above, below, a) -> dict:
     """Every measure of one series: the share that is read, and the checks beside it."""
     settings = dict(recent=a.recent, baseline=a.baseline, span=a.span, z_limit=a.z)
     out = {"id": s["id"], "label": s["label"], "left_out": sorted(s["left_out"]), "measures": {}, "checks": {}}
+    if s["base"] and every_type(above):
+        ind = indicators(share(s["count"], s["base"], above, below), **settings)
+        out["checks"]["share_all_types"] = {"what": "the share among all record types; not read, because the two sides are not made of the same kinds of record", **ind}
+        out["checks"]["count"] = {"what": "the raw count above the line; it moves with the database as well as with the subject",
+                                  **indicators({y: float(v) for y, v in s["count"].items()}, **settings),
+                                  "base_growth_pct": {y: 100 * (s["base"][y] / s["base"][y - 1] - 1) for y in ind["recent"] if s["base"].get(y - 1)}}
+        out["years"], out["reading"], out["small"] = ind["years"], NOT_READ, {"years": [], "min_count": a.min_count}
+        return out
     if s["base"]:
         ind = indicators(share(s["count"], s["base"], above, below), **settings)
         out["measures"]["share"] = {"what": f"per 100,000 of the base, counting {', '.join(kinds(above))} above and below the line", **ind}
@@ -228,10 +268,11 @@ def analyse(s: dict, above, below, a) -> dict:
         ind = indicators({y: float(v) for y, v in s["count"].items()}, **settings)
         out["measures"]["count"] = {"what": "a count with no base: it moves with the size of its source as well as with the subject", **ind}
     recent = list(ind["recent"])
+    out["years"] = ind["years"]
     out["reading"] = reading(ind)
     small = [y for y in recent if s["count"][y] < a.min_count]
     out["small"] = {"years": small, "min_count": a.min_count}
-    if s.get("count_all") and kinds(above) != ALL:
+    if s.get("count_all") and not every_type(above):
         every = indicators(share(s["count_all"], s["base_all"], ALL, ALL), **settings)
         out["checks"]["share_all_types"] = {
             "what": "the share among all record types; not read, because the two sides are not made of the same kinds of record",
@@ -258,7 +299,7 @@ def jumps(values: dict[int, float], counts: dict | None, jump: float, after: int
         if not past["usable"]:
             continue
         z = (growth[y] - past["mean"]) / past["sd"]
-        if z < jump:
+        if z < jump or growth[y] <= 0:  # a jump is a rise: a fall that is smaller than the falls before it is not one
             continue
         case = {"year": y, "z": z}
         if y + after > years[-1]:
@@ -269,24 +310,37 @@ def jumps(values: dict[int, float], counts: dict | None, jump: float, after: int
             before, at, later = values[y - 1], values[y], values[y + after]
             pace = math.log(later / at) / after if later > 0 else None
             case["outcome"] = (OUTCOMES[3] if later <= before else OUTCOMES[2] if later < at
-                               else OUTCOMES[0] if pace is not None and pace > past["mean"] else OUTCOMES[1])
+                               else OUTCOMES[0] if pace is not None and pace > max(past["mean"], 0.0) else OUTCOMES[1])
             busy_until = y + after
         found.append(case)
     return found
 
 
 def base_rate(series: list[dict], above, below, a) -> dict:
-    cases = []
+    unknown = [i for i in a.leave_out if i not in {s["id"] for s in series}]
+    if unknown:
+        raise Refused("--leave-out names no series of the file: " + ", ".join(unknown) + "; the file has " + ", ".join(s["id"] for s in series[:20]))
+    if any(s["base"] for s in series) and every_type(above):
+        raise Refused(NOT_READ)
+    cases, searched, not_searched = [], 0, []
     for s in series:
         if s["id"] in a.leave_out:
             continue
-        values = share(s["count"], s["base"], above, below) if s["base"] else {y: float(v) for y, v in s["count"].items()}
-        years = sorted(values)
-        if not years or any(y not in values for y in range(years[0], years[-1] + 1)):
+        try:
+            values = share(s["count"], s["base"], above, below) if s["base"] else {y: float(v) for y, v in s["count"].items()}
+            years = sorted(values)
+            if not years:
+                raise Refused("the series has no full year")
+            gaps = [y for y in range(years[0], years[-1] + 1) if y not in values]
+            if gaps:
+                raise Refused("the series has no value for " + ", ".join(map(str, gaps[:5])))
+        except Refused as e:
+            not_searched.append({"series": s["id"], "why": str(e)})
             continue
+        searched += 1
         cases += [{"series": s["id"], "label": s["label"], **c} for c in jumps(values, s["count"], a.jump, a.after, a.baseline, a.min_count)]
     counted = [c for c in cases if c["outcome"] in OUTCOMES]
-    return {"series_searched": sum(1 for s in series if s["id"] not in a.leave_out), "left_out_series": sorted(a.leave_out), "jump": a.jump, "after": a.after,
+    return {"series_searched": searched, "not_searched": not_searched, "left_out_series": sorted(a.leave_out), "jump": a.jump, "after": a.after,
             "min_cases": MIN_CASES, "counted": len(counted), "enough_for_a_rate": len(counted) >= MIN_CASES,
             "outcomes": {o: sum(1 for c in counted if c["outcome"] == o) for o in OUTCOMES}, "cases": cases}
 
@@ -316,8 +370,8 @@ def table(ind: dict, number: str) -> list[str]:
 def show(out: dict, header: str) -> None:
     print(f"{out['label']} ({out['id']}) · {header}")
     left = ", ".join(map(str, out["left_out"]))
+    print(f"Full years {out['years'][0]}–{out['years'][1]}." + (f" Left out: {left} (not over)." if left else ""))
     for name, m in out["measures"].items():
-        print(f"Full years {m['years'][0]}–{m['years'][1]}." + (f" Left out: {left} (not over)." if left else ""))
         print(("Share " if name == "share" else "Count: ") + m["what"])
         print("\n".join(table(m, ",.2f" if name == "share" else ",.0f")))
         if m["peak"]:
@@ -330,6 +384,8 @@ def show(out: dict, header: str) -> None:
         if name == "count":
             grew = ", ".join(f"{y}: {signed(v)}" for y, v in c["base_growth_pct"].items())
             print("Check, not read. Raw count: " + ", ".join(f"{y}: {r['value']:,.0f} ({signed(r['change_pct'])})" for y, r in c["recent"].items()) + f". The base itself grew {grew}.")
+        elif "counted_types_part" not in c:
+            print("Check, not read. Share among all record types: " + ", ".join(f"{y}: {r['value']:,.2f} ({signed(r['change_pct'])})" for y, r in c["recent"].items()) + ".")
         else:
             part = c["counted_types_part"]
             years = list(part)
@@ -344,6 +400,8 @@ def show_base_rate(found: dict, header: str) -> None:
     print(f"Base rate · {header}")
     print(f"A jump: a year whose growth was at least {found['jump']:g} standard deviations above the series' own earlier growth. What followed is read {found['after']} years later.")
     print(f"Series searched: {found['series_searched']}. Jumps with {found['after']} years to look at: {found['counted']}.")
+    for skipped in found["not_searched"]:
+        print(f"  Not searched: {skipped['series']}: {skipped['why']}")
     for outcome, n in found["outcomes"].items():
         print(f"  {n:>4}  {outcome}")
     if not found["enough_for_a_rate"]:
@@ -367,7 +425,7 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--recent", type=int, default=3, help="how many last full years to read (default 3)")
     p.add_argument("--baseline", type=int, default=10, help="how many earlier growth figures make up the series' own past (default 10)")
     p.add_argument("--span", type=int, default=5, help="years in each of the two yearly rates (default 5)")
-    p.add_argument("--z", type=float, default=2.0, help="standard deviations beyond which growth is called above or below its own past (default 2: a choice)")
+    p.add_argument("--z", type=float, default=2.0, help="standard deviations beyond which growth is called above or slower than its own past (default 2: a choice)")
     p.add_argument("--min-count", type=int, default=20, help="fewer works than this in a year are flagged as small numbers (default 20: a choice)")
     p.add_argument("--base-rate", action="store_true", help="how earlier jumps in the file's series went on")
     p.add_argument("--jump", type=float, default=2.0, help="with --base-rate: how many standard deviations make a jump (default 2: a choice)")
@@ -377,8 +435,12 @@ def main(argv: list[str] | None = None) -> int:
     a = p.parse_args(argv)
     if bool(a.file) == bool(a.own):
         p.error("give a series saved by counts.py, or --own with your own table (one of the two)")
-    if min(a.recent, a.baseline, a.span, a.after) < 1:
-        p.error("--recent, --baseline, --span and --after are whole numbers above zero")
+    if min(a.recent, a.span, a.after) < 1:
+        p.error("--recent, --span and --after are whole numbers above zero")
+    if a.baseline < MIN_BASELINE:
+        p.error(f"--baseline is at least {MIN_BASELINE}: fewer earlier growth figures give no spread to compare with")
+    if a.z <= 0 or a.jump <= 0:
+        p.error("--z and --jump are numbers above zero")
     try:
         if a.own:
             series = own_series(a.own, a.last_full_year)
@@ -420,7 +482,9 @@ def main(argv: list[str] | None = None) -> int:
                 print(f"{out['label']} ({out['id']}) · not read: {out['refused']}\n")
             else:
                 show(out, header)
-    return 2 if not a.base_rate and any("refused" in out for out in result) else 0
+    if a.base_rate:
+        return 2 if result["not_searched"] else 0
+    return 2 if any("refused" in out for out in result) else 0
 
 
 if __name__ == "__main__":

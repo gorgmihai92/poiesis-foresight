@@ -38,6 +38,7 @@ def scan(places: list[Path]) -> tuple[dict[str, int], dict[str, list[str]]]:
     given: dict[str, list[str]] = {}
     for path in files(places):
         for n, line in enumerate(path.read_text(encoding="utf-8", errors="replace").splitlines(), start=1):
+            line = re.sub(r"<[^<>]*>", "", line)  # a placeholder such as <SP-001> in a template is not an id in use
             for prefix, digits in ANY.findall(line):
                 highest[prefix] = max(highest.get(prefix, 0), int(digits))
             m = GIVEN.match(line)
@@ -56,6 +57,9 @@ def main(argv: list[str] | None = None) -> int:
         places = ([Path(a.prefix)] if a.prefix else []) + a.places
         if not places:
             p.error("--list needs the folders or files to read")
+        gone = [str(x) for x in places if not x.exists()]
+        if gone:
+            p.error("there is no such folder or file: " + ", ".join(gone))
         _, given = scan(places)
         twice = {i: where for i, where in given.items() if len(where) > 1}
         for i in sorted(given, key=lambda x: (x.split("-")[0], int(x.split("-")[1]))):
@@ -72,6 +76,9 @@ def main(argv: list[str] | None = None) -> int:
         p.error(f"{a.prefix} is not an id this plugin gives: SC (scenario), SP (signpost) or F (forecast)")
     if not a.places:
         p.error("say where to look, for example: ids.py SC foresight")
+    gone = [str(x) for x in a.places if not x.exists()]
+    if gone:  # a project's first scenario or forecast: the folder is not there yet, and the first id is right
+        print("Not there yet, so nothing in it was read: " + ", ".join(gone), file=sys.stderr)
     highest, _ = scan(a.places)
     print(f"{prefix}-{highest.get(prefix, 0) + 1:03d}")
     return 0

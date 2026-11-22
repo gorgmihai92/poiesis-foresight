@@ -11,14 +11,17 @@ counts.py) says all of this:
   - which document types were counted above and below the line of the share, and that they are the same;
   - the date fetched, the years, the years that were not over, the series and the script that made them.
 The numbers are then checked against the labels: each count in NAME.csv must be the sum of the declared types in
-NAME.types.csv, above and below the line, and a year that was not over when the series was fetched must be
-marked partial.
+NAME.types.csv, above and below the line; each share must be its count over its base; and a year that was not
+over when the series was fetched must be marked partial. A series whose metadata lists a types file that is not
+there is refused. A series counts.py saved without one (Europe PMC) is accepted, and the line says the counts
+were not checked.
 
 One line per file, ACCEPTED or REFUSED, with every reason. Exit code 0 when every series is accepted, 1 when one
 is refused. This script changes nothing and asks no database.
 """
 import argparse
 import csv
+import datetime as dt
 import json
 import re
 import sys
@@ -52,7 +55,7 @@ def named(types: tuple[str, ...]) -> str:
 
 
 def read_rows(path: Path) -> tuple[list[str], list[dict]]:
-    with path.open(newline="", encoding="utf-8") as f:
+    with path.open(newline="", encoding="utf-8-sig") as f:  # a byte-order mark is not part of the first column's name
         reader = csv.DictReader(f)
         return list(reader.fieldnames or []), list(reader)
 
@@ -74,7 +77,7 @@ def check(path: Path) -> dict:
         reasons.append(f"no metadata file ({meta_path.name}): the series does not say where it came from")
         return result
     try:
-        meta = json.loads(meta_path.read_text(encoding="utf-8"))
+        meta = json.loads(meta_path.read_text(encoding="utf-8-sig"))
     except (OSError, ValueError) as e:
         reasons.append(f"the metadata file cannot be read ({e})")
         return result
@@ -97,6 +100,8 @@ def check(path: Path) -> dict:
     elif meta["complete"] is not True:
         why = f' (it stopped: "{meta["stopped"]}")' if meta.get("stopped") else ""
         reasons.append("the series is marked incomplete" + why)
+    elif meta.get("stopped"):
+        reasons.append(f'the metadata says the run was complete and also that it stopped: "{meta["stopped"]}"')
 
     # Which database answered
     database = meta["database"].strip() if isinstance(meta.get("database"), str) else ""
@@ -106,7 +111,8 @@ def check(path: Path) -> dict:
         reasons.append("the series does not name its database")
     if not coverage:
         reasons.append("the series does not say which database answered: it has no Coverage line")
-    elif database and not re.search(re.escape(database) + r"\s+answered\b", coverage, re.I):
+    elif database and not re.search(r"(?<![A-Za-z])" + re.escape(database) + r"\s+answered\s+\(\d+\s+requests?\b", coverage, re.I):
+        # the form counts.py writes: "<database> answered (<n> requests …)"; any other sentence is not taken as a yes
         reasons.append(f'the Coverage line does not say that {database} answered: "{coverage}"')
 
     # The same document types on both sides of the share
@@ -125,9 +131,14 @@ def check(path: Path) -> dict:
     partial = meta.get("partial_years")
     ok_years = isinstance(years, list) and len(years) == 2 and all(isinstance(y, int) for y in years) and years[0] <= years[1]
     ok_partial = isinstance(partial, list) and all(isinstance(y, int) for y in partial)
-    if "fetched" not in missing and not re.fullmatch(r"\d{4}-\d{2}-\d{2}", fetched):
-        reasons.append(f'the date fetched is not a date: "{meta.get("fetched")}"')
-        fetched = ""
+    if "fetched" not in missing:
+        try:
+            if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", fetched):
+                raise ValueError
+            dt.date.fromisoformat(fetched)
+        except ValueError:
+            reasons.append(f'the date fetched is not a date: "{meta.get("fetched")}"')
+            fetched = ""
     if "years" not in missing and not ok_years:
         reasons.append("the years are not a first and a last year")
     if "partial_years" in meta and not ok_partial:
@@ -158,37 +169,63 @@ def check(path: Path) -> dict:
             header, rows = [], []
         kind = "series" if tuple(header) == SERIES_COLUMNS else "taxonomy" if tuple(header) == TAXONOMY_COLUMNS else None
         facts.update(data=str(csv_path), rows=len(rows), kind=kind)
-        if header and kind is None:
+        if not header:
+            reasons.append(f"the data file {csv_path.name} is empty")
+        elif kind is None:
             reasons.append("the data file does not have the columns counts.py writes: " + ", ".join(header))
-        elif kind:
+        elif not rows:
+            reasons.append(f"the data file {csv_path.name} has no rows")
+        else:
             reasons.extend(check_rows(rows, kind, meta if ok_partial else {**meta, "partial_years": None}, years if ok_years else None))
+            listed = [f for f in meta.get("files") or [] if isinstance(f, str) and f.endswith(".types.csv")] if isinstance(meta.get("files"), list) else []
             if kind == "series" and types_path.is_file() and above and below:
                 reasons.extend(check_types(rows, types_path, above, below))
                 facts["types_file"] = str(types_path)
+            elif kind == "series" and listed:
+                reasons.append(f"the metadata lists a types file ({listed[0]}) and it is not beside the data: the counts cannot be checked against the declared types")
             elif kind == "series":
-                facts["types_file"] = None  # Europe PMC series have none: the labels could not be checked against it
+                facts["types_file"] = None  # a series counts.py saved without one (Europe PMC): the labels could not be checked against it
 
     result["accepted"] = not reasons
     return result
 
 
 def check_rows(rows: list[dict], kind: str, meta: dict, years) -> list[str]:
-    reasons, bad_partial, bad_year, bad_number = [], [], [], []
+    reasons, bad_partial, bad_year, bad_number, twice, bad_share, seen = [], [], [], [], [], [], set()
     partial = meta.get("partial_years")
     key = "series" if kind == "series" else "topic_id"
+    pairs = [("count", "base", "share_per_100k")] + ([("count_all_types", "base_all_types", "share_all_types_per_100k")] if kind == "series" else [])
     for r in rows:
         try:
             year = int(r["year"])
-            int(r["count"]), int(r["base"])
+            for count, base, share in pairs:
+                c, b = int(r[count]), int(r[base])
+                if c < 0 or b < 0:
+                    raise ValueError
+                if b and abs(float(r[share]) - 1e5 * c / b) > 0.001:
+                    bad_share.append(f"{r[key]} {year}: `{share}` is {r[share]} and {c} over {b} gives {1e5 * c / b:.4f}")
         except (KeyError, TypeError, ValueError):
             bad_number.append(f"{r.get(key)} {r.get('year')}")
             continue
+        if (r[key], year) in seen:
+            twice.append(f"{r[key]} {year}")
+        seen.add((r[key], year))
         if years and not years[0] <= year <= years[1]:
             bad_year.append(f"{r[key]} {year}")
         if partial is not None and (r.get("partial") == "true") != (year in partial):
             bad_partial.append(f"{r[key]} {year}")
     if bad_number:
-        reasons.append("rows without a year, a count or a base: " + some(bad_number))
+        reasons.append("rows without a year, a count or a base that is a whole number: " + some(bad_number))
+    if twice:
+        reasons.append("more than one row for the same series and year: " + some(twice))
+    if bad_share:
+        reasons.append("a share that is not its count over its base: " + some(bad_share))
+    named_ids = [s.get("id") for s in meta.get("series") or [] if isinstance(s, dict)] if isinstance(meta.get("series"), list) else []
+    if kind == "series" and named_ids:
+        in_file = {r.get(key) for r in rows}
+        if in_file != set(named_ids):
+            reasons.append("the series in the data are not the ones the metadata names: " + ", ".join(sorted(map(str, in_file))) + " in the data, "
+                           + ", ".join(sorted(map(str, named_ids))) + " in the metadata")
     if bad_year:
         reasons.append("rows outside the years the metadata gives: " + some(bad_year))
     if bad_partial:
@@ -204,8 +241,12 @@ def check_types(rows: list[dict], types_path: Path, above: tuple[str, ...], belo
         _, type_rows = read_rows(types_path)
         table: dict[tuple[str, int], dict[str, int]] = {}
         for t in type_rows:
-            table.setdefault((t["series"], int(t["year"])), {})[t["type"].strip().lower()] = int(t["count"])
-    except (OSError, csv.Error, KeyError, TypeError, ValueError, UnicodeDecodeError) as e:
+            cell = table.setdefault((t["series"], int(t["year"])), {})
+            name = t["type"].strip().lower()
+            if name in cell:
+                return [f"the types file has two rows for {t['series']} {t['year']} {name}"]
+            cell[name] = int(t["count"])
+    except (OSError, csv.Error, KeyError, TypeError, ValueError, AttributeError, UnicodeDecodeError) as e:
         return [f"the types file cannot be read ({e})"]
 
     def total(series: str, year: int, types: tuple[str, ...]) -> int:
@@ -221,7 +262,7 @@ def check_types(rows: list[dict], types_path: Path, above: tuple[str, ...], belo
                 if int(r[column]) != total(who, year, types):
                     wrong.append(f"{r['series']} {year}: `{column}` is {r[column]} and the types file gives {total(who, year, types)} for {named(types)}")
         except (KeyError, TypeError, ValueError):
-            continue  # check_rows already named this row
+            continue  # a row that is not all whole numbers: check_rows named it
     return ["the counts are not the sum of the declared document types: " + some(wrong)] if wrong else []
 
 

@@ -13,7 +13,8 @@ last value | last checked. A column added later goes after these ten.
 
 It prints what is due (status watching, next check today or earlier), what has reached its trigger, and every
 row whose status and numbers disagree. It changes nothing: a status is changed by hand, in a review.
-Exit code 0, or 1 when a row is not understood or its status disagrees with its numbers.
+Exit code 0, or 1 when a row is not understood or its status disagrees with its numbers, or 2 when the log
+cannot be read.
 """
 import argparse
 import datetime as dt
@@ -29,7 +30,8 @@ COMPARE = {">=": lambda v, t: v >= t, "<=": lambda v, t: v <= t, ">": lambda v, 
 
 def rows(path: Path) -> list[list[str]]:
     out = []
-    for line in path.read_text(encoding="utf-8").splitlines():
+    for line in path.read_text(encoding="utf-8-sig").splitlines():
+        line = line.strip()
         if not line.startswith("|") or set(line) <= {"|", "-", ":", " "}:  # the line under the header, aligned or not
             continue
         cells = [c.strip() for c in line.strip("|").split("|")]
@@ -40,7 +42,7 @@ def rows(path: Path) -> list[list[str]]:
 
 def number(text: str) -> float | None:
     try:
-        return float(text.strip().rstrip("%").replace(",", ""))
+        return float(text.strip().rstrip("%"))  # a comma is not read as a decimal point or dropped: "9,5" is not a number here
     except ValueError:
         return None
 
@@ -51,8 +53,15 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--today", help="read the log as on this date (YYYY-MM-DD) instead of today")
     a = p.parse_args(argv)
     today = a.today or dt.date.today().isoformat()
+    if not DATE.fullmatch(today):
+        p.error("--today is a date written YYYY-MM-DD")
+    try:
+        found = rows(a.log)
+    except (OSError, UnicodeDecodeError) as e:
+        print(f"The log cannot be read: {e}")
+        return 2
     due, reached, wrong, judged, watching = [], [], [], [], 0
-    for r in rows(a.log):
+    for r in found:
         if len(r) < 8:
             wrong.append(f"{r[0]}: fewer than the eight cells a signpost needs")
             continue

@@ -7,7 +7,7 @@ and the response prepared in advance. Read with: `python3 -I <scripts>/signposts
   Say whether it is the outcome itself or a driver upstream of it.
 - `trigger`: a comparison with a number (`>= 25`, `< 0.5`) when there is one, so the script can compare; otherwise
   a sentence a person can judge.
-- `points to`: the ids of the scenarios it tells apart (SC-001).
+- `points to`: the ids of the scenarios it tells apart, such as `<SC-001>`.
 - `response`: defensive, corrective, capitalizing or reassessment, or "look closer", and what will be done.
 - `lead time`: how long the response takes to prepare and to work. A trigger reached later than that is too late.
 - `status`: watching, reached or retired. It is changed by hand, in a review.

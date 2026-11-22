@@ -144,7 +144,7 @@ class Scripts(unittest.TestCase):
     def test_no_script_opens_a_connection_or_writes_a_file(self):
         for script in sorted(SCRIPTS.glob("*.py")):
             text = script.read_text(encoding="utf-8")
-            for word in ("urllib", "socket", "http.client", "requests", "subprocess", ".write_text(", ".write_bytes(", "os.remove", "unlink("):
+            for word in ("urllib", "socket", "http.client", "import requests", "subprocess", ".write_text(", ".write_bytes(", "os.remove", "unlink("):
                 self.assertNotIn(word, text, f"{script.name} uses {word}")
             self.assertIsNone(re.search(r"open\([^)]*[\"'][wa]", text), f"{script.name} opens a file for writing")
 

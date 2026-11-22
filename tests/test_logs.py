@@ -82,6 +82,34 @@ class Forecasts(unittest.TestCase):
             text = scored(str(log))
         self.assertEqual(text, "Brier score: 0.040 over 1 resolved forecasts (0 = perfect, 0.25 = always 50%)\n  F-001: said 80%, outcome 1 → 0.040\n")
 
+    def write(self, tmp: str, body: str) -> str:
+        log = Path(tmp) / "forecasts.md"
+        log.write_text("| id | question | probability | made | resolve by | outcome | reasoning |\n|---|---|---|---|---|---|---|\n" + body, encoding="utf-8")
+        return str(log)
+
+    def test_a_probability_an_outcome_or_a_date_that_is_not_one_is_not_understood(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            text = scored(self.write(tmp, "| F-001 | ok | 0.80 | 2019-01-01 | 2019-06-30 | 1 | n |\n| F-002 | percent | 80 | 2019-01-01 | 2019-06-30 | 1 | n |\n"
+                                          "| F-003 | negative | -0.2 | 2019-01-01 | 2019-06-30 | 0 | n |\n| F-004 | nan | nan | 2019-01-01 | 2019-06-30 | 0 | n |\n"
+                                          "| F-005 | word | 0.50 | 2019-01-01 | 2019-06-30 | yes | n |\n| F-006 | date | 0.50 | 2019-01-01 | 30.06.2019 |  | n |\n"
+                                          "| F-007 | far | 0.50 | 2019-01-01 | 01.01.2099 |  | n |\n"))
+        self.assertEqual(text, "Brier score: 0.040 over 1 resolved forecasts (0 = perfect, 0.25 = always 50%)\n  F-001: said 80%, outcome 1 → 0.040\n"
+                               "\nRows not understood: F-002, F-003, F-004, F-005, F-006, F-007\n")
+
+    def test_an_indented_table_is_read_and_another_table_is_passed_over(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            log = Path(tmp) / "forecasts.md"
+            log.write_text("- a list item\n  | id | question | probability | made | resolve by | outcome | reasoning |\n  |---|---|---|---|---|---|---|\n"
+                           "  | F-001 | indented | 0.80 | 2019-01-01 | 2019-06-30 | 1 | n |\n\n"
+                           "| database | what | share | from | to | answered | note |\n|---|---|---|---|---|---|---|\n| OpenAlex | works | 0.90 | 2019-01-01 | 2019-06-30 | 1 | n |\n", encoding="utf-8")
+            text = scored(str(log))
+        self.assertEqual(text, "Brier score: 0.040 over 1 resolved forecasts (0 = perfect, 0.25 = always 50%)\n  F-001: said 80%, outcome 1 → 0.040\n")
+
+    def test_a_log_that_cannot_be_read_says_so(self):
+        done = subprocess.run([sys.executable, "-I", str(SCRIPTS / "forecasts.py"), "no-such-log.md"], capture_output=True, text=True)
+        self.assertEqual((done.returncode, done.stderr), (2, ""))
+        self.assertTrue(done.stdout.startswith("The log cannot be read:"))
+
     def test_the_template_is_a_log_the_script_reads(self):
         text = scored(str(SKILL / "templates" / "forecasts.md"), "--sources")
         self.assertIn("No resolved forecasts yet.", text)
@@ -144,6 +172,17 @@ class Signposts(unittest.TestCase):
             code, text, _ = run(signposts, [str(log), "--today", "2030-06-01"])
         self.assertEqual((code, text), (0, "Signposts watched: 1. Reached: 0.\n"))
 
+    def test_a_comma_is_not_read_as_a_decimal_point_and_a_missing_log_says_so(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            log = Path(tmp) / "signposts.md"
+            log.write_text("| id | watch | trigger | points to | response | lead time | status | next check | last value | last checked |\n|---|---|---|---|---|---|---|---|---|---|\n"
+                           "| SP-001 | Share of X | >= 25 | SC-001 | corrective: do Y | 6 months | watching | 2031-01-01 | 9,5 | 2030-05-01 |\n", encoding="utf-8")
+            code, text, _ = run(signposts, [str(log), "--today", "2030-06-01"])
+            self.assertEqual(code, 1)
+            self.assertIn('SP-001: the last value "9,5" is not a number', text)
+            self.assertEqual(run(signposts, [str(log), "--today", "tomorrow"])[0], 2)
+            self.assertEqual(run(signposts, [str(Path(tmp) / "none.md")])[0], 2)
+
     def test_the_template_is_a_log_the_script_reads(self):
         code, text, _ = run(signposts, [str(SKILL / "templates" / "signposts.md")])
         self.assertEqual((code, text), (0, "Signposts watched: 0. Reached: 0.\n"))
@@ -190,6 +229,19 @@ class Ids(unittest.TestCase):
         code, _, err = run(ids, ["SG", str(self.root / "research")])
         self.assertEqual(code, 2)
         self.assertIn("Signal ids come from poiesis-research", err)
+
+    def test_a_placeholder_in_a_template_is_not_an_id_in_use(self):
+        self.write("foresight/forecasts.md", (SKILL / "templates" / "forecasts.md").read_text(encoding="utf-8"))
+        self.write("foresight/signposts.md", (SKILL / "templates" / "signposts.md").read_text(encoding="utf-8"))
+        self.assertEqual(run(ids, ["F", str(self.root / "foresight")])[1], "F-001\n")
+        self.assertEqual(run(ids, ["SP", str(self.root / "foresight")])[1], "SP-001\n")
+        self.assertEqual(run(ids, ["SC", str(self.root / "foresight")])[1], "SC-001\n")
+
+    def test_a_folder_that_is_not_there_yet_gives_the_first_id_and_says_so(self):
+        code, text, err = run(ids, ["SC", str(self.root / "nothing-here")])
+        self.assertEqual((code, text), (0, "SC-001\n"))
+        self.assertIn("Not there yet", err)
+        self.assertEqual(run(ids, ["--list", str(self.root / "nothing-here")])[0], 2)
 
     def test_an_unknown_prefix_or_no_place_is_an_error(self):
         self.assertEqual(run(ids, ["IN", str(self.root)])[0], 2)

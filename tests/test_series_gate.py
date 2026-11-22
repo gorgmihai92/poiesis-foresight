@@ -144,8 +144,9 @@ class Refuses(GateCase):
         lines[1] = ",".join(cells)
         path.write_text("\n".join(lines) + "\n", encoding="utf-8")
         reasons = self.reasons(path)
-        self.assertEqual(len(reasons), 1)
-        self.assertIn("the counts are not the sum of the declared document types: solid-state-batteries 2015: `base` is 9329446 and the types file gives 5905543", reasons[0])
+        self.assertEqual(len(reasons), 2)
+        self.assertIn("a share that is not its count over its base: solid-state-batteries 2015", reasons[0])
+        self.assertIn("the counts are not the sum of the declared document types: solid-state-batteries 2015: `base` is 9329446 and the types file gives 5905543", reasons[1])
 
     def test_a_data_file_missing_or_with_other_columns(self):
         self.assertIn("is not beside the metadata", self.reasons(self.copy(drop=(".csv",)).with_name(SERIES.name + ".meta.json"))[0])
@@ -153,10 +154,61 @@ class Refuses(GateCase):
         path.write_text("year,works\n2015,88\n", encoding="utf-8")
         self.assertIn("does not have the columns counts.py writes", self.reasons(path)[0])
 
-    def test_a_series_without_a_types_file_is_accepted_and_says_the_counts_were_not_checked(self):
-        code, text, _ = run(gate, [str(self.copy(drop=(".types.csv",)))])
+    def test_a_types_file_the_metadata_lists_and_that_is_not_there(self):
+        """Without it the labels cannot be checked against the numbers: every type in the base column would pass."""
+        reasons = self.reasons(self.copy(drop=(".types.csv",)))
+        self.assertEqual(len(reasons), 1)
+        self.assertIn("the metadata lists a types file (solid-state-batteries-2026-11-21.types.csv) and it is not beside the data", reasons[0])
+
+    def test_a_series_saved_without_a_types_file_is_accepted_and_says_the_counts_were_not_checked(self):
+        def change(meta):
+            meta["files"] = [f for f in meta["files"] if not f.endswith(".types.csv")]
+        code, text, _ = run(gate, [str(self.copy(change, drop=(".types.csv",)))])
         self.assertEqual(code, 0)
         self.assertIn("No types file: the counts were not checked against it.", text)
+
+    def test_an_empty_data_file_or_one_with_no_rows(self):
+        path = self.copy()
+        path.write_text("", encoding="utf-8")
+        self.assertIn("is empty", self.reasons(path)[0])
+        path.write_text(",".join(gate.SERIES_COLUMNS) + "\n", encoding="utf-8")
+        self.assertIn("has no rows", self.reasons(path)[0])
+
+    def test_complete_and_stopped_at_once_and_a_date_that_is_no_date(self):
+        def stopped(meta):
+            meta["stopped"] = "OpenAlex asks for a key"
+
+        def date(meta):
+            meta["fetched"] = "2026-13-45"
+        self.assertIn("complete and also that it stopped", self.reasons(self.copy(stopped))[0])
+        self.assertIn('the date fetched is not a date: "2026-13-45"', self.reasons(self.copy(date)))
+
+    def test_only_the_coverage_sentence_counts_py_writes_is_taken_as_a_yes(self):
+        for sentence in ("OpenAlex answered nothing; Crossref answered (3 requests)", "it is not known whether OpenAlex answered", "OpenAlex answered? No."):
+            def change(meta, sentence=sentence):
+                meta["coverage"] = sentence
+            self.assertTrue(self.reasons(self.copy(change))[0].startswith("the Coverage line does not say that OpenAlex answered"), sentence)
+
+        def short(meta):
+            meta["database"] = "Alex"
+        self.assertTrue(self.reasons(self.copy(short))[0].startswith("the Coverage line does not say that Alex answered"))
+
+    def test_rows_given_twice_series_the_metadata_does_not_name_and_cells_that_are_not_numbers(self):
+        path = self.copy()
+        lines = path.read_text(encoding="utf-8").splitlines()
+        path.write_text("\n".join(lines + [lines[1]]) + "\n", encoding="utf-8")
+        self.assertIn("more than one row for the same series and year: solid-state-batteries 2015", self.reasons(path))
+        path.write_text("\n".join([lines[0]] + [l.replace("quantum-computing,", "other-id,") for l in lines[1:]]) + "\n", encoding="utf-8")
+        self.assertTrue(any(r.startswith("the series in the data are not the ones the metadata names") for r in self.reasons(path)))
+        cells = lines[1].split(",")
+        cells[7] = ""
+        path.write_text("\n".join([lines[0], ",".join(cells)] + lines[2:]) + "\n", encoding="utf-8")
+        self.assertIn("rows without a year, a count or a base that is a whole number: solid-state-batteries 2015", self.reasons(path))
+
+    def test_a_byte_order_mark_does_not_hide_the_first_column(self):
+        path = self.copy()
+        path.write_bytes(b"\xef\xbb\xbf" + path.read_bytes())
+        self.assertTrue(gate.check(path)["accepted"])
 
     def test_json_output_lists_every_reason(self):
         def change(meta):

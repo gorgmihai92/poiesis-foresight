@@ -12,9 +12,14 @@ The first six columns are read by position, so columns added to a log go after `
 with --sources, by the name in the header row: `model` (the probabilities of the model's independent runs,
 separated by spaces) and `owner` (the owner's own probability). `probability` stays the forecast of record.
 Without --sources the output is what it was before those columns existed.
+
+A row is "not understood", and left out of the score, when its probability is not a number from 0 to 1, its
+outcome is anything but 1, 0 or empty, or it has no outcome and its resolve date is not written YYYY-MM-DD. A
+table whose header does not start with `id` is another table and is passed over.
 """
 import argparse
 import datetime as dt
+import math
 import re
 import statistics
 import sys
@@ -25,23 +30,44 @@ def cells_of(line: str) -> list[str]:
     return [c.strip() for c in line.strip("|").split("|")]
 
 
-def rows(path: Path) -> list[list[str]]:
-    out = []
-    for line in path.read_text(encoding="utf-8").splitlines():
-        if not line.startswith("|") or set(line) <= {"|", "-", ":", " "}:  # the line under the header, aligned or not
+def tables(path: Path) -> list[tuple[list[str], list[list[str]]]]:
+    """The forecast tables of a file, each as (header cells in lower case, rows). A table is a run of lines that
+    start with `|`, indented or not. Its header is the line above the line of dashes. A table whose header does not
+    start with `id` is not a forecast table."""
+    found, block = [], []
+    for line in [*path.read_text(encoding="utf-8-sig").splitlines(), ""]:
+        line = line.strip()
+        if line.startswith("|"):
+            block.append(line)
             continue
-        cells = cells_of(line)
-        if cells and cells[0].lower() != "id" and not cells[0].startswith("<"):
-            out.append(cells)
-    return out
+        if block:
+            dashes = [i for i, l in enumerate(block) if set(l) <= {"|", "-", ":", " "}]  # the line under the header, aligned or not
+            head = [c.lower() for c in cells_of(block[dashes[0] - 1])] if dashes and dashes[0] > 0 else []
+            if not head or head[0] == "id":
+                body = [cells_of(l) for i, l in enumerate(block) if i not in dashes and not (dashes and i == dashes[0] - 1)]
+                found.append((head, [c for c in body if c and c[0].lower() != "id" and not c[0].startswith("<")]))
+            block = []
+    return found
 
 
-def header(path: Path) -> list[str]:
-    """The cells of the header row, lower-case; empty when the log has none."""
-    for line in path.read_text(encoding="utf-8").splitlines():
-        if line.startswith("|") and cells_of(line)[0].lower() == "id":
-            return [c.lower() for c in cells_of(line)]
-    return []
+def rows(path: Path) -> list[list[str]]:
+    return [r for _, body in tables(path) for r in body]
+
+
+def probability(text: str) -> float | None:
+    """A probability from 0 to 1, or None."""
+    try:
+        x = float(text)
+    except ValueError:
+        return None
+    return x if math.isfinite(x) and 0 <= x <= 1 else None
+
+
+def understood(r: list[str]) -> bool:
+    """Whether a row can be scored or waited for: see the note at the top of this file."""
+    if len(r) < 6 or probability(r[2]) is None or r[5] not in ("", "0", "1"):
+        return False
+    return bool(r[5]) or not r[4] or bool(re.fullmatch(r"\d{4}-\d{2}-\d{2}", r[4]))
 
 
 def probabilities(cell: str) -> list[float] | None:
@@ -59,20 +85,21 @@ def brier(pairs: list[tuple[float, int]]) -> float:
 
 def by_source(path: Path) -> None:
     """Score the forecast of record, the model's runs and the owner's probability on the same resolved rows."""
-    head = header(path)
-    where = {name: next((i for i, cell in enumerate(head) if i >= 7 and cell.startswith(name)), None) for name in ("model", "owner")}
     print("\nBy source:")
-    if where["model"] is None or where["owner"] is None:
+    with_columns, named = [], False
+    for head, body in tables(path):
+        where = {name: next((i for i, cell in enumerate(head) if i >= 7 and cell.startswith(name)), None) for name in ("model", "owner")}
+        if where["model"] is not None and where["owner"] is not None:
+            named = True
+            with_columns += [(where, r) for r in body]
+    if not named:
         print("  The log has no `model` and `owner` columns after `reasoning`: nothing to compare.")
         return
     kept, left, bad, off = [], [], [], []
-    for r in rows(path):
-        if len(r) < 6 or r[5] not in ("0", "1"):
+    for where, r in with_columns:
+        if not understood(r) or r[5] not in ("0", "1"):
             continue
-        try:
-            record = float(r[2])
-        except ValueError:
-            continue
+        record = float(r[2])
         cell = {name: r[i] if i < len(r) else "" for name, i in where.items()}
         if not cell["model"] or not cell["owner"]:
             left.append(r[0])
@@ -83,7 +110,7 @@ def by_source(path: Path) -> None:
             continue
         both = (statistics.mean(runs) + own[0]) / 2
         kept.append((r[0], int(r[5]), record, statistics.mean(runs), statistics.median(runs), own[0], both, len(runs)))
-        if abs(record - both) > 0.005:
+        if abs(record - both) > 0.0051:  # a mean such as 0.345 logged as 0.35 or 0.34 is the mean
             off.append(f"{r[0]} ({record:.2f} logged, {both:.2f} is the mean)")
     if kept:
         print(f"  Over the {len(kept)} resolved forecasts that have a model and an owner probability (0 = perfect, 0.25 = always 50%):")
@@ -110,16 +137,17 @@ def main() -> int:
     a = p.parse_args()
     today = dt.date.today().isoformat()
     scored, due, bad = [], [], []
-    for r in rows(a.log):
-        if len(r) < 6:
+    try:
+        found = rows(a.log)
+    except (OSError, UnicodeDecodeError) as e:
+        print(f"The log cannot be read: {e}")
+        return 2
+    for r in found:
+        if not understood(r):
             bad.append(r[0])
             continue
         fid, question, prob, _made, resolve, outcome = r[:6]
-        try:
-            pr = float(prob)
-        except ValueError:
-            bad.append(fid)
-            continue
+        pr = float(prob)
         if outcome in ("0", "1"):
             scored.append((fid, pr, int(outcome)))
         elif resolve and resolve <= today:

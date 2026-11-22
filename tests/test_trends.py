@@ -61,7 +61,7 @@ class Numbers(unittest.TestCase):
         self.assertFalse(ind["own_past"]["usable"])
         self.assertTrue(all(r["z"] is None and r["pace"] is None for r in ind["recent"].values()))
         self.assertEqual(ind["recent"][2023]["level"], "unchanged")
-        self.assertEqual(trends.reading(ind), "rose in 2022 and 2024; was unchanged in 2023; growth not compared with its own past: it has 1 earlier growth figure and 5 are asked.")
+        self.assertEqual(trends.reading(ind), "rose in 2022 and 2024; was unchanged in 2023; growth not compared with its own past: it has 1 earlier growth figure and 5 are asked; the series is too short for a yearly rate over 5 years.")
 
     def test_a_year_with_no_works_gives_no_change_figure_and_no_z(self):
         values = {2012 + i: v for i, v in enumerate([4.0, 5.0, 0.0, 6.0, 7.0, 8.0, 9.0, 0.0, 12.0])}
@@ -81,7 +81,7 @@ class Numbers(unittest.TestCase):
         values = {2000 + i: v for i, v in enumerate([10.0, 11.0, 12.0, 13.5, 14.5, 16.0, 17.5, 19.0, 21.0, 23.0, 25.0, 27.5, 30.0, 60.0])}
         loose, strict = trends.indicators(values, recent=1, z_limit=2.0), trends.indicators(values, recent=1, z_limit=1000.0)
         self.assertEqual(loose["recent"][2013]["z"], strict["recent"][2013]["z"])
-        self.assertEqual((loose["recent"][2013]["pace"], strict["recent"][2013]["pace"]), ("above its own past", "within its own past"))
+        self.assertEqual((loose["recent"][2013]["pace"], strict["recent"][2013]["pace"]), ("faster than its own past", "in line with its own past"))
 
 
 class Share(unittest.TestCase):
@@ -155,21 +155,41 @@ class RecordedRun(unittest.TestCase):
         # 2. on the same types, solid-state batteries rose in each recent year, within their own past
         read = trends.indicators(self.measures("ssb")["t"])
         self.assertEqual([r["level"] for r in read["recent"].values()], ["rose", "rose", "rose"])
-        self.assertEqual({r["pace"] for r in read["recent"].values()}, {"within its own past"})
+        self.assertEqual({r["pace"] for r in read["recent"].values()}, {"in line with its own past"})
         sentence = trends.reading(read)
-        self.assertEqual(sentence, "rose in 2023, 2024 and 2025; growth within its own past in 2023, 2024 and 2025; 29.0% a year over 2015–2020, 12.8% over 2020–2025.")
-        for word in ("fell", "declin", "below"):
+        self.assertEqual(sentence, "rose in 2023, 2024 and 2025; growth in line with its own past in 2023, 2024 and 2025; 29.0% a year over 2015–2020, 12.8% over 2020–2025.")
+        for word in ("fell", "declin", "below", "slower"):
             self.assertNotIn(word, sentence)
-        # 3. the trap is in the data: among all record types the share fell in 2025, far below its own past
+        # 3. the trap is in the data: among all record types the share fell in 2025, far slower than its own past
         trap = trends.indicators(self.measures("ssb")["ta"])["recent"][2025]
         self.assertEqual(trap["level"], "fell")
         self.assertLess(trap["z"], -2.5)
 
+    def test_a_share_on_every_record_type_is_shown_and_never_read(self):
+        """All records over all works carries the same label on both sides, and it is the measure that misled the first pass."""
+        ssb, total = self.data["series"]["ssb"], self.data["total"]
+        with tempfile.TemporaryDirectory() as tmp:
+            table = Path(tmp) / "ssb.csv"
+            table.write_text("series,year,count,base\n" + "".join(f"ssb,{y},{ssb['broad'][str(y)]},{total['all'][str(y)]}\n" for y in range(2010, 2026)), encoding="utf-8")
+            for words in ("all", "All works", "every record type"):
+                code, text, err = run(trends, ["--own", str(table), "--last-full-year", "2025", "--above", words, "--below", words, "--json"])
+                self.assertEqual((code, err), (0, ""), words)
+                read = json.loads(text)["series"][0]
+                self.assertEqual(read["measures"], {})
+                self.assertTrue(read["reading"].startswith("not read: this share counts every record type on both sides"))
+                for word in ("fell", "declin", "slower", "rose"):
+                    self.assertNotIn(word, read["reading"])
+                self.assertEqual(read["checks"]["share_all_types"]["recent"]["2025"]["level"], "fell")  # shown, as a check
+            code, text, _ = run(trends, ["--own", str(table), "--last-full-year", "2025", "--above", "all", "--below", "all"])
+            self.assertIn("Reading: not read: this share counts every record type on both sides", text)
+            self.assertEqual(text.count("Check, not read."), 2)
+            self.assertEqual(run(trends, ["--own", str(table), "--last-full-year", "2025", "--above", "all", "--below", "all", "--base-rate"])[0], 2)
+
     def test_one_area_stands_out_and_it_is_not_called_a_trend(self):
         sentences = {area: trends.reading(trends.indicators(self.measures(area)["t"])) for area in self.want}
-        above = [area for area, s in sentences.items() if "above its own past" in s]
+        above = [area for area, s in sentences.items() if "faster than its own past" in s]
         self.assertEqual(above, ["synbio"])
-        self.assertIn("growth above its own past in 2025", sentences["synbio"])
+        self.assertIn("growth faster than its own past in 2025", sentences["synbio"])
         for s in sentences.values():
             for word in ("trend", "emerging", "booming", "declin"):
                 self.assertNotIn(word, s)
@@ -305,6 +325,42 @@ class OwnTable(unittest.TestCase):
         self.assertIn("Reading: rose in 2021, 2022 and 2023", text)
         self.assertIn("gap (gap) · not read: the series has no value for 2021", text)
 
+    def test_a_partial_cell_that_is_not_true_or_false_is_refused(self):
+        rows = "".join(f"s,{2015 + i},{c},false\n" for i, c in enumerate([5, 6, 6, 8, 9, 9, 11, 12, 15])) + "s,2024,4,yes\n"
+        code, _, err = run(trends, ["--own", self.table("series,year,count,partial\n" + rows)])
+        self.assertEqual(code, 2)
+        self.assertIn('line 11 of the table has "yes" in the `partial` column: write true or false', err)
+
+    def test_a_series_with_no_full_year_is_named_and_the_others_are_read(self):
+        good = "".join(f"good,{2014 + i},{c},false\n" for i, c in enumerate([30, 33, 35, 40, 44, 47, 52, 60, 66, 70]))
+        code, text, err = run(trends, ["--own", self.table("series,year,count,partial\n" + good + "new,2024,3,true\n")])
+        self.assertEqual((code, err), (2, ""))
+        self.assertIn("new (new) · not read: the series has no full year", text)
+        self.assertIn("Reading: rose in 2021, 2022 and 2023", text)
+
+    def test_a_file_saved_by_counts_py_is_not_taken_as_a_table_of_your_own(self):
+        code, _, err = run(trends, ["--own", CSV, "--last-full-year", "2025", "--above", "article", "--below", "article"])
+        self.assertEqual(code, 2)
+        self.assertIn("this is a series saved by counts.py, not a table of your own", err)
+
+    def test_a_base_of_zero_a_negative_count_and_a_wild_year_are_refused(self):
+        rows = "".join(f"s,{2016 + i},{c},{b}\n" for i, (c, b) in enumerate([(40, 1000), (44, 1000), (50, 1100), (52, 1100), (60, 1200), (66, 1200), (80, 1300), (90, 1300), (130, 0)]))
+        code, text, _ = run(trends, ["--own", self.table("series,year,count,base\n" + rows), "--last-full-year", "2024", "--above", "x", "--below", "x"])
+        self.assertEqual(code, 2)
+        self.assertIn("not read: the base is zero or missing in 2024", text)
+        self.assertEqual(run(trends, ["--own", self.table("series,year,count\ns,2023,-4\n"), "--last-full-year", "2023"])[0], 2)
+        self.assertEqual(run(trends, ["--own", self.table("series,year,count\ns,20222,4\n"), "--last-full-year", "99999"])[0], 2)
+        self.assertEqual(run(trends, ["--own", self.table("series,year,count\ns,2023,inf\n"), "--last-full-year", "2023"])[0], 2)
+
+    def test_limits_that_make_no_sense_are_refused(self):
+        for extra in (["--baseline", "3"], ["--z", "0"], ["--jump", "-1"], ["--recent", "0"]):
+            self.assertEqual(run(trends, [CSV, *extra])[0], 2, extra)
+
+    def test_a_short_series_says_why_it_gives_no_yearly_rate(self):
+        rows = "".join(f"s,{2016 + i},{c}\n" for i, c in enumerate([30, 33, 35, 40, 44, 47, 52, 60]))
+        _, text, _ = run(trends, ["--own", self.table("series,year,count\n" + rows), "--last-full-year", "2023"])
+        self.assertIn("a year over 2018–2023; the series is too short for the 5 years before", text)
+
     def test_one_input_and_only_one(self):
         self.assertEqual(run(trends, [])[0], 2)
         self.assertEqual(run(trends, [CSV, "--own", CSV])[0], 2)
@@ -357,6 +413,23 @@ class BaseRate(unittest.TestCase):
         self.assertIn("Jumps with 3 years to look at: 4.", text)
         self.assertIn("Fewer than 20 jumps: too few to call a rate.", text)
         self.assertNotIn("%", text)
+
+    def test_a_smaller_fall_is_not_a_jump_and_a_flat_aftermath_is_not_growth(self):
+        falling = {2009 + i: v for i, v in enumerate([600.0, 590.0, 579.0, 569.0, 558.0, 547.0, 535.0, 534.0, 531.0, 533.0, 534.0])}
+        self.assertEqual(trends.jumps(falling, None, jump=2.0, after=3, baseline=5, min_count=0), [])
+        flat = {2009 + i: v for i, v in enumerate([600.0, 590.0, 579.0, 569.0, 558.0, 547.0, 535.0, 700.0, 700.0, 700.0, 700.0])}
+        self.assertEqual([c["outcome"] for c in trends.jumps(flat, None, jump=2.0, after=3, baseline=5, min_count=0)], ["kept the gain, at its earlier pace or slower"])
+
+    def test_a_series_that_cannot_be_searched_and_a_misspelt_id_are_said(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = self.table(tmp, "gap,2015,30\ngap,2016,31\ngap,2018,35\n")
+            code, text, _ = run(trends, ["--own", path, "--last-full-year", "2019", "--base-rate", "--baseline", "5"])
+            self.assertEqual(code, 2)
+            self.assertIn("Series searched: 4.", text)
+            self.assertIn("Not searched: gap: the series has no value for 2017", text)
+            code, _, err = run(trends, ["--own", path, "--last-full-year", "2019", "--base-rate", "--leave-out", "fastr"])
+            self.assertEqual(code, 2)
+            self.assertIn("--leave-out names no series of the file: fastr", err)
 
     def test_the_years_after_a_counted_jump_belong_to_it(self):
         found = trends.jumps({2009 + i: v for i, v in enumerate(self.STEADY + self.AFTER["faster"])}, None, jump=2.0, after=3, baseline=5, min_count=20)
