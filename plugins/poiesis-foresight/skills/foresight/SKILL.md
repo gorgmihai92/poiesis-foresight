@@ -123,3 +123,10 @@ means "unknown", said in the report, never an error.
   A signpost's id is SP-001; a forecast's is F-001.
 - Reads `research/signals/`, `research/data/`, `research/notes/` and `research/README.md` (poiesis-research) and
   `insights/` (poiesis-insight).
+
+Added in 0.2.0. Everything above is unchanged.
+- The report, the two logs and a review start with a block of Obsidian properties, as their templates show
+  (`type`, `plugin`, `date`, `topic`; a review adds `id` and `from`). Copy the values from the file itself; the
+  block is a copy for Obsidian's views, and the Id and Challenge lines and the log rows stay the record. In the
+  block no line starts with `#`, text values are quoted, and a link is one quoted list item. Never put a link in a
+  heading or an **Id** line, or a link with an alias (`[[a|b]]`) in a log row or any table.

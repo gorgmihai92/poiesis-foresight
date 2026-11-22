@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.2.0
+Everything is added: no path, field or column of 0.1.0 was renamed or removed, and the scripts read every file as
+before.
+- **Properties.** The templates of the report, the forecast log, the signpost log and a review start with a block of
+  Obsidian properties (YAML between two `---` lines): `type`, `plugin`, `date` and `topic`; a review, which is one
+  object, adds `id` and `from` (the two logs it reads). A report holds several scenarios and a log several rows, so
+  their properties carry no id or verdict: those stay on the Id and Challenge lines and in the rows, which remain
+  the record. The scenario and signal templates go inside a report and get no block.
+- **Tests.** `test_templates.py`: the block in each template and its rules, and `forecasts.py`, `signposts.py` and
+  `ids.py` giving the same results on logs with the block and without it.
+- **Not checked in this version:** how Obsidian shows the properties (no vault was opened), and any run on a topic.
+
 ## 0.1.0
 The first version. Foresight becomes a plugin of its own; until now it was a playbook inside poiesis-insight.
 Nothing was removed from poiesis-insight, and the files both plugins write are the same.
