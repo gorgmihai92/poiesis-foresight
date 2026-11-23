@@ -156,7 +156,7 @@ class Manifest(unittest.TestCase):
         plugin = json.loads((PLUGIN / ".claude-plugin" / "plugin.json").read_text(encoding="utf-8"))
         market = json.loads((ROOT / ".claude-plugin" / "marketplace.json").read_text(encoding="utf-8"))
         changelog = re.search(r"^## (\d+\.\d+\.\d+)$", (ROOT / "CHANGELOG.md").read_text(encoding="utf-8"), re.M).group(1)
-        self.assertEqual(plugin["version"], "0.2.0")
+        self.assertEqual(plugin["version"], "0.2.1")
         self.assertEqual([p["version"] for p in market["plugins"]], [plugin["version"]])
         self.assertEqual(changelog, plugin["version"])
         self.assertEqual((plugin["name"], market["plugins"][0]["name"], market["plugins"][0]["source"]), ("poiesis-foresight", "poiesis-foresight", "./plugins/poiesis-foresight"))

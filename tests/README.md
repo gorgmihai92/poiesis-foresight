@@ -13,7 +13,7 @@ This folder is not part of the plugin, so it is not installed with it.
 |---|---|
 | `test_series_gate.py` | a series replayed from poiesis-research's recording is accepted; copies with one side's types changed, marked incomplete, or with no database named are refused |
 | `test_trends.py` | the numbers of the lab's recorded run are reproduced for every area; a share with different document types on its two sides is refused; solid-state batteries do not come out as falling; own tables; base rates |
-| `test_logs.py` | `forecasts.py` with and without the new columns, `signposts.py`, `ids.py` |
+| `test_logs.py` | `forecasts.py` with and without the new columns, the gap between the two wordings, `signposts.py`, `ids.py` |
 | `test_plugin_files.py` | every playbook starts with "Read first" and names notes that exist; every note has a Read line; the version is the same in three places; the eval cases have the files a case needs |
 
 ## Fixtures

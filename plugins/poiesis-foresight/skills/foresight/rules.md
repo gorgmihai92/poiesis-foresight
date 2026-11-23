@@ -8,12 +8,12 @@ otherwise **standard**.
   passes the gate before it is read; numbers come from the scripts; a scenario is never given as a forecast; a
   forecast has a question, a probability and a date, and is logged before its outcome; a verdict is written once;
   nothing from memory unmarked; no step improvised.
-- **Quick:** one pass, inline. The three questions of `playbooks/challenge.md`, inline. One model probability,
-  logged as one run.
-- **Standard:** the playbook as written. The challenge inline. Three independent model runs for a forecast.
-- **Thorough:** also a second database or wording for every series where poiesis-research can count one, five
-  model runs, and the challenge by poiesis-insight's independent `challenger` agent when that plugin is
-  installed.
+- **Quick:** one pass, inline. One model probability, logged as one run.
+- **Standard:** the playbook as written. Three independent model runs for a forecast.
+- **Thorough:** also a second database or wording for every series where poiesis-research can count one, and five
+  model runs.
+- **The challenge at each depth,** who gives its verdict and how a scenario's verdict is stamped:
+  `playbooks/challenge.md`, "Who gives the verdict" and "Stamping a scenario's verdict".
 
 A default may be skipped at any depth if the report says which one and why. Every report ends with **Not
 checked:** what was skipped, or "nothing". These rules limit what is reported as true, never what may be explored.

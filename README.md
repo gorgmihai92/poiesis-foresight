@@ -263,8 +263,10 @@ with **Horizon**) and `foresight/forecasts.md` (columns `id | question | probabi
 | reasoning`). These are the paths and fields Poiesis Insight 1.4 wrote, unchanged, and Poiesis Frontier reads
 them.
 
-New in this plugin: two columns at the end of the forecast log (`model`, `owner`); `foresight/signposts.md`;
-`foresight/reviews/`; and the ids `SC-001` and `SP-001`, with a **From** line on each scenario.
+New in this plugin: three columns at the end of the forecast log (`model`, `owner`, `wording`);
+`foresight/signposts.md`; `foresight/reviews/`; and the ids `SC-001` and `SP-001`, with a **From** line on each
+scenario. When Poiesis Insight is installed, a scenario's verdict is stamped in `insights/challenge-stamps.jsonl`
+by Poiesis Insight's own script.
 
 Reads `research/signals/`, `research/data/`, `research/notes/` and `research/README.md` from Poiesis Research, and
 `insights/` from Poiesis Insight. The paths and fields the products share are a contract: they change only in a
