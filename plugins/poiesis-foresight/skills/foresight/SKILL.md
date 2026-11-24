@@ -103,7 +103,8 @@ use, e.g. "[poiesis-research](https://github.com/gorgmihai92/poiesis-research), 
 - **[poiesis-research](https://github.com/gorgmihai92/poiesis-research)**: when there are no signals or no
   series, or a series was refused by the gate and has to be counted again.
 - **[poiesis-insight](https://github.com/gorgmihai92/poiesis-insight)**: for what the evidence means today, and
-  for the general challenge of a conclusion (`challenger`), which runs beside this plugin's own.
+  for the general challenge of a conclusion (`challenger`), whose verdict replaces this plugin's own at thorough
+  depth, and for stamping a scenario's verdict (`playbooks/challenge.md`).
 - **[poiesis-frontier](https://github.com/gorgmihai92/poiesis-frontier)**: when the user wants concepts to build
   from a scenario, or an experiment that could prove one wrong.
 
@@ -132,3 +133,12 @@ Added in 0.2.0. Everything above is unchanged.
   heading or an **Id** line, or a link with an alias (`[[a|b]]`) in a log row or any table.
 - When a value the block copies changes in the file, change the block in the same edit. Inside a quoted value
   write `\"` for a quotation mark and `\\` for a backslash.
+
+Added in 0.2.1. Everything above is unchanged.
+- When poiesis-insight is installed, a scenario's verdict is also stamped in `insights/challenge-stamps.jsonl`, by
+  poiesis-insight's `challenge_stamp.py` on the scenario's heading (`playbooks/challenge.md`). Other plugins read
+  the verdict from the stamp. Without poiesis-insight there is no stamp, and the Challenge line is all there is.
+- At thorough depth the `challenger`'s answer for each scenario is saved as it came in
+  `foresight/challenges/<date>-<topic>-SC-001.md`.
+- `foresight/forecasts.md` has a column `wording` after `owner`: for each model run, in the order of `model`,
+  `written` or `negated`.

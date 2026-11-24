@@ -13,6 +13,12 @@ with --sources, by the name in the header row: `model` (the probabilities of the
 separated by spaces) and `owner` (the owner's own probability). `probability` stays the forecast of record.
 Without --sources the output is what it was before those columns existed.
 
+A third column, `wording`, says for each model run, in the order of `model`, whether it was given the question as
+`written` or its negation (`negated`); a negated run's answer p' is logged in `model` as 1 - p'. With --sources,
+when the log has that column, the script prints for each forecast with runs in both wordings the gap: the mean of
+the written runs minus the mean of the negated ones, both as the probability of yes. A log without the column
+prints what it printed before.
+
 A row is "not understood", and left out of the score, when its probability is not a number from 0 to 1, its
 outcome is anything but 1, 0 or empty, or it has no outcome and its resolve date is not written YYYY-MM-DD. A
 table whose header does not start with `id` is another table and is passed over.
@@ -130,10 +136,48 @@ def by_source(path: Path) -> None:
         print("  The forecast of record is not the mean of the owner's and the model's: " + ", ".join(off))
 
 
+def other_way_round(path: Path) -> None:
+    """The gap between the model's runs on the question as written and on its negation, per forecast."""
+    with_column, named = [], False
+    for head, body in tables(path):
+        where = {name: next((i for i, cell in enumerate(head) if i >= 7 and cell.startswith(name)), None) for name in ("model", "wording")}
+        if where["model"] is not None and where["wording"] is not None:
+            named = True
+            with_column += [(where, r) for r in body]
+    if not named:
+        return
+    print("\nThe other way round (the mean of the runs given the question as written, minus the mean of those given its negation, both as the probability of yes):")
+    gaps, one, bad = [], [], []
+    for where, r in with_column:
+        cell = {name: r[i] if i < len(r) else "" for name, i in where.items()}
+        if not cell["wording"].strip():
+            continue
+        runs, words = probabilities(cell["model"]), cell["wording"].split()
+        if runs is None or len(words) != len(runs) or any(w not in ("written", "negated") for w in words):
+            bad.append(r[0])
+            continue
+        written = [x for x, w in zip(runs, words) if w == "written"]
+        negated = [x for x, w in zip(runs, words) if w == "negated"]
+        if not written or not negated:
+            one.append(r[0])
+            continue
+        gap = statistics.mean(written) - statistics.mean(negated)
+        gaps.append(gap)
+        print(f"  {r[0]}: {round(gap, 2) or 0.0:+.2f} ({len(written)} written, mean {statistics.mean(written):.2f}; {len(negated)} negated, mean {statistics.mean(negated):.2f})")
+    if len(gaps) > 1:
+        print(f"  Mean gap over {len(gaps)} forecasts: {round(statistics.mean(gaps), 2) or 0.0:+.2f}")
+    if not gaps:
+        print("  No forecast has runs in both wordings yet.")
+    if one:
+        print("  One wording only: " + ", ".join(one))
+    if bad:
+        print("  Model or wording cell not understood (one word per run, written or negated): " + ", ".join(bad))
+
+
 def main() -> int:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("log", type=Path)
-    p.add_argument("--sources", action="store_true", help="also score the `model` and `owner` columns, on the rows that have both")
+    p.add_argument("--sources", action="store_true", help="also score the `model` and `owner` columns, on the rows that have both, and print the gap between the two wordings")
     a = p.parse_args()
     today = dt.date.today().isoformat()
     scored, due, bad = [], [], []
@@ -167,6 +211,7 @@ def main() -> int:
         print("\nRows not understood: " + ", ".join(bad))
     if a.sources:
         by_source(a.log)
+        other_way_round(a.log)
     return 0
 
 

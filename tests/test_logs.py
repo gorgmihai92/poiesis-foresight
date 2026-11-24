@@ -87,6 +87,46 @@ class Forecasts(unittest.TestCase):
         log.write_text("| id | question | probability | made | resolve by | outcome | reasoning |\n|---|---|---|---|---|---|---|\n" + body, encoding="utf-8")
         return str(log)
 
+    def test_the_wording_column_gives_the_gap_between_the_two_wordings(self):
+        """`wording` says which runs were given the negation; --sources prints the gap, and the scores do not move."""
+        head = ("| id | question | probability | made | resolve by | outcome | reasoning | model | owner | wording |\n"
+                "|---|---|---|---|---|---|---|---|---|---|\n")
+        body = ("| F-001 | Two and one | 0.70 | 2019-01-01 | 2019-06-30 | 1 | n | 0.70 0.80 0.60 | 0.70 | written written negated |\n"
+                "| F-002 | Three and two, interleaved | 0.45 | 2019-01-01 | 2099-12-31 |  | n | 0.40 0.50 0.40 0.50 0.45 | 0.45 | written negated written negated written |\n"
+                "| F-003 | One wording only | 0.50 | 2019-01-01 | 2099-12-31 |  | n | 0.50 0.50 0.50 | 0.50 | written written written |\n"
+                "| F-004 | Fewer words than runs | 0.50 | 2019-01-01 | 2099-12-31 |  | n | 0.50 0.50 0.50 | 0.50 | written negated |\n"
+                "| F-005 | A word that is not one of the two | 0.50 | 2019-01-01 | 2099-12-31 |  | n | 0.50 0.50 | 0.50 | yes no |\n"
+                "| F-006 | No wording: a row from before the column | 0.50 | 2019-01-01 | 2099-12-31 |  | n | 0.50 0.50 | 0.50 |  |\n"
+                "| F-007 | No gap | 0.40 | 2019-01-01 | 2099-12-31 |  | n | 0.40 0.40 | 0.40 | negated written |\n")
+        with tempfile.TemporaryDirectory() as tmp:
+            log = Path(tmp) / "forecasts.md"
+            log.write_text(head + body, encoding="utf-8")
+            text = scored(str(log), "--sources")
+            without = Path(tmp) / "without.md"
+            without.write_text(head.replace(" wording |", "").replace("|---|\n", "\n", 1)
+                               + "".join(line.rsplit(" |", 2)[0] + " |\n" for line in body.splitlines()), encoding="utf-8")
+            before = scored(str(without), "--sources")
+            self.assertEqual(scored(str(log)), scored(str(without)))
+        self.assertTrue(text.startswith("Brier score: 0.090 over 1 resolved forecasts"))
+        self.assertEqual(text, before + (
+            "\nThe other way round (the mean of the runs given the question as written, minus the mean of those given its "
+            "negation, both as the probability of yes):\n"
+            "  F-001: +0.15 (2 written, mean 0.75; 1 negated, mean 0.60)\n"
+            "  F-002: -0.08 (3 written, mean 0.42; 2 negated, mean 0.50)\n"
+            "  F-007: +0.00 (1 written, mean 0.40; 1 negated, mean 0.40)\n"
+            "  Mean gap over 3 forecasts: +0.02\n"
+            "  One wording only: F-003\n"
+            "  Model or wording cell not understood (one word per run, written or negated): F-004, F-005\n"))
+
+    def test_a_wording_column_with_no_row_in_both_wordings_says_so(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            log = Path(tmp) / "forecasts.md"
+            log.write_text("| id | question | probability | made | resolve by | outcome | reasoning | model | owner | wording |\n"
+                           "|---|---|---|---|---|---|---|---|---|---|\n"
+                           "| F-001 | Quick depth | 0.70 | 2019-01-01 | 2099-12-31 |  | n | 0.70 | 0.70 | written |\n", encoding="utf-8")
+            text = scored(str(log), "--sources")
+        self.assertTrue(text.endswith("  No forecast has runs in both wordings yet.\n  One wording only: F-001\n"))
+
     def test_a_probability_an_outcome_or_a_date_that_is_not_one_is_not_understood(self):
         with tempfile.TemporaryDirectory() as tmp:
             text = scored(self.write(tmp, "| F-001 | ok | 0.80 | 2019-01-01 | 2019-06-30 | 1 | n |\n| F-002 | percent | 80 | 2019-01-01 | 2019-06-30 | 1 | n |\n"
@@ -114,6 +154,7 @@ class Forecasts(unittest.TestCase):
         text = scored(str(SKILL / "templates" / "forecasts.md"), "--sources")
         self.assertIn("No resolved forecasts yet.", text)
         self.assertIn("No resolved forecast has both a model and an owner probability yet.", text)
+        self.assertIn("No forecast has runs in both wordings yet.", text)
         self.assertNotIn("not understood", text)
 
     def test_the_labs_log_gives_the_labs_expected_output_line_for_line(self):

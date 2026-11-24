@@ -21,9 +21,9 @@ Notes in `research/notes` of the plugin's repository. Each says how much of its 
 ## Write the question
 - **Precise and checkable:** one outcome, yes or no, that a stranger could settle from a named source by a date.
   "Will X publish Y by 2027-06-30, as shown on Z?" Not "Will X grow?".
-- **Ask it the other way round too** where that makes sense ("Will X not … by …?"), and compare the two answers.
-  In one study models leaned toward "yes" (Schoenegger et al. 2024, p. 1, 9). The check is this plugin's use of
-  that finding.
+- **Write it the other way round too** where that makes sense ("Will X not … by …?"). Separate model runs get the
+  two wordings (step 3), and the gap between them is the check. In one study models leaned toward "yes"
+  (Schoenegger et al. 2024, p. 1, 9). The check is this plugin's use of that finding.
 - **Mix the dates.** Include questions that resolve within months: a log with no resolved rows teaches nothing.
 
 ## Give the probability
@@ -39,10 +39,21 @@ Notes in `research/notes` of the plugin's repository. Each says how much of its 
    - standard: three runs, in parallel;
    - thorough: five.
    Each run is a model call. Say how many will be made before making them.
+   - **The two wordings go to separate runs.** Of the runs, about half get the question as written and the rest
+     its negation: two and one at standard, three and two at thorough. A run never sees the other wording. It
+     answers the wording it was given; a negated run's answer p' is written as 1 − p' before anything is
+     combined, so every number in `model` is the probability that the question as written happens.
+   - **The gap is the check:** `python3 -I $S/forecasts.py foresight/forecasts.md --sources` prints, once the row
+     is logged, the mean of the written runs minus the mean of the negated ones. Paste it into the reasoning. A
+     positive gap is what a lean toward "yes" would give; with two runs and one it is also run-to-run noise. It is
+     reported, not corrected for: the forecast of record is not adjusted by it (a choice).
+   - At quick depth, or when the question has no sensible negation, every run gets the wording as written, and the
+     report says under "Not checked" that the other way round was not asked.
 4. **The forecast of record** is the mean of the owner's probability and the mean of the model's runs. Where one
    is missing it is the other.
 5. **Log it:** the id (`python3 -I $S/ids.py F foresight`), the question, the probability, today's date, the
-   resolve date, an empty outcome, the note that holds the reasoning, the model's runs, the owner's probability.
+   resolve date, an empty outcome, the note that holds the reasoning, the model's runs, the owner's probability,
+   and the wording of each run (`written` or `negated`, in the order of the runs).
 
 ## Rules
 - **Written before the outcome, never edited after.** Only `outcome` is filled in later. A changed view is a new

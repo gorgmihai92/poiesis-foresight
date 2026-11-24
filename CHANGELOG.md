@@ -1,5 +1,33 @@
 # Changelog
 
+## 0.2.1
+Two fixes. No path, field or column was renamed or removed; one column is added at the end of the forecast log.
+- **One verdict, and it reaches the other plugins.** `playbooks/challenge.md` now holds the one rule for who gives
+  the verdict, and `rules.md` points to it: at quick and standard depth, foresight's own inline challenge; at
+  thorough, when poiesis-insight is installed, its `challenger` agent's verdict, which replaces the inline one.
+  poiesis-insight's `playbooks/challenge.md` is no longer run "as well", so two challenges no longer compete for
+  one conclusion. When poiesis-insight is installed, each scenario's verdict is stamped with its own
+  `challenge_stamp.py` (found in the highest installed version), on the scenario's heading, so frontier's gate and
+  studio's report read it like any stamp. At thorough depth each scenario goes to the `challenger` in a call of its
+  own, the answer is saved in `foresight/challenges/`, and a kept or dropped verdict is stamped from it with
+  `--verdicts`, so it is not retyped and poiesis-insight 2.1.1 checks the answer's Claim against the scenario's
+  name. A weakened scenario keeps its name, takes the narrower claim into **Holds only if**, and is stamped with
+  `--id --verdict weakened`; an inline verdict is stamped with `--id --verdict`. The stamp binds the name, not the
+  body: after an edit of substance the scenario is challenged again (`--again`). Insight's scripts are taken from
+  the version `claude plugin list` shows enabled. Without poiesis-insight the scenario keeps its Challenge line
+  only, and the report says the verdict is not stamped. The scenario template did not change: its heading with the Id line
+  under it is what the stamp format reads (checked offline on 2026-11-23 with poiesis-insight 2.1.0's script and
+  poiesis-frontier's gate). Rows of a note's challenge table are not stamped.
+- **The other way round, in separate runs.** The `forecaster` agent no longer gives the probability that the event
+  does not happen: inside one run that is only 1 − p and cannot show a lean toward "yes". Of the model's runs, about
+  half get the question as written and the rest its negation; a negated answer p' is logged as 1 − p'. A new last
+  column of the forecast log, `wording`, says which wording each run got, and `forecasts.py --sources` prints the
+  gap between the two halves. A log without the column prints what it printed before.
+- **Tests.** `test_logs.py`: the gap, a row in one wording only, cells that cannot be read, scores unchanged by the
+  new column, and the template read with it.
+- **Not checked in this version:** any run on a topic, the evals (not run: no model calls), and whether the
+  `challenger` agent answers the foresight questions it is handed.
+
 ## 0.2.0
 Everything is added: no path, field or column of 0.1.0 was renamed or removed, and the scripts read every file as
 before.
