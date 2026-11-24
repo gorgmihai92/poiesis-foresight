@@ -1,6 +1,6 @@
 # Poiesis Foresight
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24501566.svg)](https://doi.org/10.5281/zenodo.24501566)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24501566.svg)](https://doi.org/10.5281/zenodo.24501566) [![Cognitive Centered Design Oath: signed](https://raw.githubusercontent.com/gorgmihai92/ccd-oath/main/badges/ccd-oath-signed.svg)](https://github.com/gorgmihai92/ccd-oath/blob/main/SIGNATORIES.md)
 
 Foresight you can check, in Claude Code. Poiesis Foresight reads the signals, yearly counts and research a project
 already holds and looks forward from them: what is changing, what it could mean, and what to watch. The numbers
