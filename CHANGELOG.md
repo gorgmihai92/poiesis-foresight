@@ -7,7 +7,7 @@ Two fixes. No path, field or column was renamed or removed; one column is added 
   thorough, when poiesis-insight is installed, its `challenger` agent's verdict, which replaces the inline one.
   poiesis-insight's `playbooks/challenge.md` is no longer run "as well", so two challenges no longer compete for
   one conclusion. When poiesis-insight is installed, each scenario's verdict is stamped with its own
-  `challenge_stamp.py` (found in the highest installed version), on the scenario's heading, so frontier's gate and
+  `challenge_stamp.py`, on the scenario's heading, so frontier's gate and
   studio's report read it like any stamp. At thorough depth each scenario goes to the `challenger` in a call of its
   own, the answer is saved in `foresight/challenges/`, and a kept or dropped verdict is stamped from it with
   `--verdicts`, so it is not retyped and poiesis-insight 2.1.1 checks the answer's Claim against the scenario's
